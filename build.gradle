@@ -12,6 +12,8 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
+    implementation 'io.vertx:vertx-core:4.4.0'
 }
 
 test {
