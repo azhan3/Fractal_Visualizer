@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
 
 function App() {
+  const [responseData, setResponseData] = useState('');
+
+  fetch('http://localhost:8888/send-data', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ key: 'value' }), // Replace with your JSON data
+  })
+    .then(response => response.text())
+    .then(data => {
+      // Display the response data in your React app
+      console.log(data);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Test
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Received Data:</h1>
+      <p>{responseData}</p>
     </div>
   );
 }

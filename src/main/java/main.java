@@ -9,10 +9,17 @@ import io.vertx.core.Vertx;
 public class main extends AbstractVerticle {
 
     public static void main(String[] args) {
+        System.out.println("TEST");
         Vertx vertx = Vertx.vertx();
         DeploymentOptions options = new DeploymentOptions().setInstances(1);
-        vertx.deployVerticle(new backend(), options);
+        Backend test = new Backend();
+        vertx.deployVerticle(test, options);
+        test.send();
     }
+
+
+
+
 
 }
 
