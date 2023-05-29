@@ -19,29 +19,48 @@ public class PAddicRepresenter {
         double l = this.l;
         int p = this.p;
         List<Integer> decomposedInt = completedIntToBase(n);
+        System.out.println(decomposedInt);
         double real = 0.0;
         double imag = 0.0;
         for (int i = 0; i < decomposedInt.size(); i++) {
             int c = decomposedInt.get(i);
-            real += l * Math.pow(p, i) * Math.cos(c * 2 * Math.PI / p);
-            imag += l * Math.pow(p, i) * Math.sin(c * 2 * Math.PI / p);
+            double power = Math.pow(l, i);
+            double angle = c * 2 * Math.PI / p;
+
+            real += power * Math.cos(angle);
+            imag += power * Math.sin(angle);
         }
+
+        System.out.println(real + " " + imag);
         return new double[]{real, imag};
     }
 
     public List<List<Double>> transformSample(Integer ns) {
         List<Double> xs = new ArrayList<>();
         List<Double> ys = new ArrayList<>();
-        for (int n = 0 ; n <= ns ; ++n) {
+        List<Double> secondaryXs = new ArrayList<>();
+        List<Double> secondaryYs = new ArrayList<>();
+
+        for (int n = 0; n <= ns; ++n) {
             double[] planeCoords = toPlane(n);
             double x = planeCoords[0];
             double y = planeCoords[1];
+
+            // Add points to the primary list
             xs.add(x);
             ys.add(y);
-        }
-        return Arrays.asList(xs, ys);
 
+            // Check if the point adheres to the prime race 3x+2
+            if ((3 * x + 2) % 1 == 0) {
+                // Add the point to the secondary list
+                secondaryXs.add(x);
+                secondaryYs.add(y);
+            }
+        }
+
+        return Arrays.asList(xs, ys, secondaryXs, secondaryYs);
     }
+
 
     private List<Integer> intToBase(int n) {
         int p = this.p;

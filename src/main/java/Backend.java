@@ -9,7 +9,9 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import math.PointList;
 
 public class Backend extends AbstractVerticle {
 
@@ -40,18 +42,26 @@ public class Backend extends AbstractVerticle {
 
 
     }
-    public void send() {
+    public void send(PointList pointList) {
         WebClient client = WebClient.create(vertx);
-        JsonObject json = new JsonObject().put("key", "value");
-        System.out.println(json.toString());
-        client.post(3000, "localhost", "/data")
-        .sendJsonObject(json, ar -> {
-            if (ar.succeeded()) {
-                System.out.println("YAY");
-            } else {
-                System.out.println("ERR");
-            }
-        });
+        String url = "http://localhost:31415/data";
+
+        String jsonPayload = pointList.toJson();
+
+        client.postAbs(url)
+                .sendBuffer(Buffer.buffer(jsonPayload), ar -> {
+                    if (ar.succeeded()) {
+                        HttpResponse<Buffer> response = ar.result();
+                        System.out.println("Status Code: " + response.statusCode());
+                        System.out.println("Response Body: " + response.bodyAsString());
+                    } else {
+                        System.out.println("Request failed: " + ar.cause().getMessage());
+                    }
+                });
     }
+
+
+
+
 
 }
