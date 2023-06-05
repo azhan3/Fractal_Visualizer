@@ -1,33 +1,13 @@
-const http = require('http');
-const url = require('url');
+const express = require('express');
+const router = express.Router();
 
-module.exports = http.createServer((req, res) => {
+const getRequest = require('./getRequest');
+const postView = require('./postView');
+const postRequest = require('./postRequest');
+const invalidRequest = require('./invalidRequest');
 
-    var service = require('./service.js');
-    const reqUrl = url.parse(req.url, true);
-    console.log(reqUrl);
-    // GET Endpoint
-    if (reqUrl.pathname === '/data' && req.method === 'GET') {
-        console.log('Request Type: ' +
-            req.method + ' Endpoint: ' +
-            reqUrl.pathname);
+router.get('/data', getRequest);
+router.post('/data', postRequest);
+router.post('/view', postView);
 
-        service.getRequest(req, res);
-
-        // POST Endpoint
-    } else if (reqUrl.pathname === '/data' && req.method === 'POST') {
-        console.log('Request Type: ' +
-            req.method + ' Endpoint: ' +
-            reqUrl.pathname);
-
-        service.postRequest(req, res);
-
-    } else {
-        console.log('Request Type: ' +
-            req.method + ' Invalid Endpoint: ' +
-            reqUrl.pathname);
-
-        service.invalidRequest(req, res);
-
-    }
-});
+module.exports = router;

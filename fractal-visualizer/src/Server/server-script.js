@@ -6,8 +6,9 @@ app.use(cors());
 const hostname = '127.0.0.1';
 const port = 31415;
 
-const server = require('./controller.js');
+const controller = require('./controller.js');
+app.use('/', controller);
 
-server.listen(port, hostname, () => {
+app.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 });

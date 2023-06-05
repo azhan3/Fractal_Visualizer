@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Viewport from './Viewport';
 
 const App = () => {
   const [zoom, setZoom] = useState(2);
   const [pointsData, setPointsData] = useState([]);
+  const [nValue, setNValue] = useState('');
+  const [pValue, setPValue] = useState('');
   const svgRef = useRef(null);
   const visualizeButtonRef = useRef(null);
 
@@ -25,14 +28,34 @@ const App = () => {
   };
 
   const handleVisualize = () => {
-    fetchData();
+    const requestData = {
+      zoom: zoom,
+      nValue: parseInt(nValue, 10),
+      pValue: parseInt(pValue, 10)
+    };
+
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    };
+
+    fetch('http://localhost:31415/view', requestOptions)
+      .then(response => response.json())
+      .then(data => {
+        // Process the response data if needed
+        console.log(data);
+      })
+      .catch(error => {
+        console.error('Error sending data:', error);
+      });
   };
 
   const calculateScaledCoordinate = (coordinate, maxCoordinate, viewportSize) => {
     const center = viewportSize / 2;
-    const scaledCoordinate = (coordinate / 100000000000) * zoom + center; // Apply scaling factor
-
-    console.log(scaledCoordinate);
+    const scaledCoordinate = (coordinate / 10) * zoom + center; // Apply scaling factor
     return scaledCoordinate;
   };
 
@@ -54,6 +77,9 @@ const App = () => {
 
   useEffect(() => {
     visualizeButtonRef.current.addEventListener('click', fetchData);
+    return () => {
+      visualizeButtonRef.current.removeEventListener('click', fetchData);
+    };
   }, []);
 
   const renderPoints = () => {
@@ -66,26 +92,30 @@ const App = () => {
     });
   };
 
+  const handleNValueChange = (event) => {
+    setNValue(event.target.value);
+  };
+
+  const handlePValueChange = (event) => {
+    setPValue(event.target.value);
+  };
+
   return (
     <div>
       <div>
         <button onClick={handleZoomIn}>Zoom In</button>
         <button onClick={handleZoomOut}>Zoom Out</button>
       </div>
-      <svg
-        ref={svgRef}
-        style={{ width: '100%', height: '60vh', border: '1px solid black' }}
-      >
-        {/* Render coordinate plane */}
-        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="gray" />
-        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="gray" />
-
-        {/* Render points on the coordinate plane */}
-        {renderPoints()}
-      </svg>
       <div>
-        <button ref={visualizeButtonRef}>Visualize!</button>
+        <input type="text" value={nValue} onChange={handleNValueChange} placeholder="Enter N value" />
+        <input type="text" value={pValue} onChange={handlePValueChange} placeholder="Enter P value" />
+        <button ref={visualizeButtonRef} onClick={handleVisualize}>Visualize!</button>
       </div>
+      <Viewport
+        pointsData={[[1, 3]]}
+        zoom={zoom}
+        calculateScaledCoordinate={calculateScaledCoordinate}
+      />
     </div>
   );
 };

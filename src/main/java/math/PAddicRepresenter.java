@@ -19,7 +19,7 @@ public class PAddicRepresenter {
         double l = this.l;
         int p = this.p;
         List<Integer> decomposedInt = completedIntToBase(n);
-        System.out.println(decomposedInt);
+        //System.out.println(decomposedInt);
         double real = 0.0;
         double imag = 0.0;
         for (int i = 0; i < decomposedInt.size(); i++) {

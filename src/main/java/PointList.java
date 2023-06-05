@@ -1,5 +1,3 @@
-package math;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,23 +36,10 @@ public class PointList {
         yList.clear();
     }
 
-    public String toJson() {
-        StringBuilder jsonBuilder = new StringBuilder();
-        jsonBuilder.append("{\"points\": [");
-
-        for (int i = 0; i < xList.size(); i++) {
-            double x = xList.get(i);
-            double y = yList.get(i);
-            jsonBuilder.append("{\"x\": ").append(x).append(", \"y\": ").append(y).append("}");
-
-            if (i < xList.size() - 1) {
-                jsonBuilder.append(",");
-            }
-        }
-
-        jsonBuilder.append("]}");
-
-        return jsonBuilder.toString();
+    public JSONAppender toJsonAppender() {
+        JSONAppender appender = new JSONAppender();
+        appender.addArray("xList", xList.toArray());
+        appender.addArray("yList", yList.toArray());
+        return appender;
     }
 }
-

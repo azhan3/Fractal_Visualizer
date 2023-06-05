@@ -1,6 +1,7 @@
 const url = require('url');
 const generatePoints = require('../Points/PointsGenerator');
 const cors = require('cors');
+const axios = require('axios');
 
 let data = {};
 
@@ -21,7 +22,7 @@ exports.getRequest = function (req, res) {
   res.end(JSON.stringify(response));
 };
 
-exports.postRequest = function (req, res) {
+exports.postView = function (req, res) {
   let body = '';
 
   req.on('data', function (chunk) {
@@ -30,18 +31,12 @@ exports.postRequest = function (req, res) {
 
   req.on('end', function () {
     try {
-      const postBody = JSON.parse(body);
+      const viewData = JSON.parse(body);
 
-      // Process the received JSON data
-      // For example, you can access the PointList object using postBody.xList and postBody.yList
-
-      // Send a response back
-      const pointsData = generatePoints([{ x: 110, y: 110 }, { x: 1, y: 1 }]);
-
-      data = postBody.points;
+      data = viewData.points;
 
       const response = {
-        text: `received ${postBody.points.length} points`,
+        text: `received new viewport settings`,
       };
 
       res.statusCode = 200;
@@ -57,6 +52,61 @@ exports.postRequest = function (req, res) {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Access-Control-Allow-Origin', '*'); // Enable CORS for all origins
       res.end(JSON.stringify(response));
+    }
+  });
+};
+
+exports.postRequest = function (req, res) {
+  let body = '';
+
+  req.on('data', function (chunk) {
+    body += chunk;
+  });
+
+  req.on('end', function () {
+    try {
+      const postBody = JSON.parse(body);
+
+      // Process the received JSON data
+      // For example, you can access the PointList object using postBody.xList and postBody.yList
+
+      // Send a request to http://localhost:8888 with the received JSON data
+      axios.post('http://localhost:8888', postBody)
+        .then(response => {
+          // Process the response if needed
+
+          // Send a response back to the client
+          const responseData = {
+            text: `received ${postBody.points.length} points`,
+          };
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Access-Control-Allow-Origin', '*'); // Enable CORS for all origins
+          res.end(JSON.stringify(responseData));
+        })
+        .catch(error => {
+          // Handle the error if needed
+
+          // Send an error response back to the client
+          const errorResponse = {
+            text: 'ERROR',
+          };
+
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Access-Control-Allow-Origin', '*'); // Enable CORS for all origins
+          res.end(JSON.stringify(errorResponse));
+        });
+    } catch (e) {
+      const errorResponse = {
+        text: 'ERROR',
+      };
+
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Enable CORS for all origins
+      res.end(JSON.stringify(errorResponse));
     }
   });
 };

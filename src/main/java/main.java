@@ -1,14 +1,14 @@
-import com.github.sh0nk.matplotlib4j.Plot;
 import com.github.sh0nk.matplotlib4j.PythonExecutionException;
 import math.PAddicRepresenter;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import math.PointList;
 
 import java.io.IOException;
 import java.util.List;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 public class main extends AbstractVerticle {
 
@@ -37,13 +37,37 @@ public class main extends AbstractVerticle {
         List<List<Double>> point = par.transformSample(nPoints);
         List<Double> x = point.get(0);
         List<Double> y = point.get(1);
+
+
+
+        double xmaxa=-10000000, xmini=10000000, ymaxa=-10000000,ymini=10000000;
+        for (double i : x) {
+            xmaxa = max(xmaxa, i);
+            xmini = min(xmini, i);
+        }
+        for (double i : y) {
+            ymaxa = max(ymaxa, i);
+            ymini = min(ymini, i);
+        }
         List<Double> primeX = point.get(2);
         List<Double> primeY = point.get(3);
         for (int i = 0; i < x.size(); i++) {
             pl.addPoint(x.get(i), y.get(i));
         }
+        System.out.println("MAX: " + xmaxa + " " + ymaxa);
+        System.out.println("MIN: " + xmini + " " + ymini);
 
-        test.send(pl);
+
+        JSONAppender parentAppender = new JSONAppender();
+
+        JSONAppender cappender = pl.toJsonAppender();
+        String jsonString = cappender.toJson();
+
+        parentAppender.addAppender("points", cappender);
+        System.out.println(parentAppender.toJson());
+
+
+        test.send(parentAppender);
 
     }
 
