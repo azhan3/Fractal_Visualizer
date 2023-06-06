@@ -4,8 +4,10 @@ import Viewport from './Viewport';
 const App = () => {
   const [zoom, setZoom] = useState(2);
   const [pointsData, setPointsData] = useState([]);
-  const [nValue, setNValue] = useState('');
-  const [pValue, setPValue] = useState('');
+  const [nValue, setNValue] = useState(1000);
+  const [pValue, setPValue] = useState(3);
+  const [lValue, setLValue] = useState(0.5);
+
   const svgRef = useRef(null);
   const visualizeButtonRef = useRef(null);
 
@@ -31,7 +33,9 @@ const App = () => {
     const requestData = {
       zoom: zoom,
       nValue: parseInt(nValue, 10),
-      pValue: parseInt(pValue, 10)
+      pValue: parseInt(pValue, 10),
+      lValue: parseFloat(lValue, 10)
+
     };
 
     const requestOptions = {
@@ -99,6 +103,9 @@ const App = () => {
   const handlePValueChange = (event) => {
     setPValue(event.target.value);
   };
+  const handleLValueChange = (event) => {
+    setLValue(event.target.value);
+  };
 
   return (
     <div>
@@ -106,16 +113,17 @@ const App = () => {
         <button onClick={handleZoomIn}>Zoom In</button>
         <button onClick={handleZoomOut}>Zoom Out</button>
       </div>
+            <Viewport
+
+            />
       <div>
         <input type="text" value={nValue} onChange={handleNValueChange} placeholder="Enter N value" />
         <input type="text" value={pValue} onChange={handlePValueChange} placeholder="Enter P value" />
+        <input type="text" value={lValue} onChange={handleLValueChange} placeholder="Enter L value" />
+
         <button ref={visualizeButtonRef} onClick={handleVisualize}>Visualize!</button>
       </div>
-      <Viewport
-        pointsData={[[1, 3]]}
-        zoom={zoom}
-        calculateScaledCoordinate={calculateScaledCoordinate}
-      />
+
     </div>
   );
 };

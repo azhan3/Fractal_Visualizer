@@ -8,8 +8,17 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import math.PAddicRepresenter;
+import util.JSONAppender;
+import util.PointList;
+
+import java.util.List;
 
 public class Backend extends AbstractVerticle {
+    private final Gson gson = new Gson();
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -39,10 +48,23 @@ public class Backend extends AbstractVerticle {
                 // Process the received data
                 System.out.println("Received data: " + body);
 
-                // Process the data and perform any necessary operations here
+                // Create Gson instance
 
+                // Convert JSON string to JsonObject
+                JsonObject data = gson.fromJson(body, JsonObject.class);
+
+                // Process the data and perform any necessary operations here
+                int n = data.get("nValue").getAsInt();
+                int p = data.get("pValue").getAsInt();
+                float l = data.get("lValue").getAsFloat();
+                PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
+                PointList pl =  newPoints.transformSample(n);
+
+                JSONAppender parentAppender = new JSONAppender();
+                parentAppender.addAppender("points", pl.toJsonAppender());
+                System.out.println(parentAppender.toJson());
                 response.putHeader("Content-Type", "text/plain")
-                        .end("Data received and processed successfully");
+                        .end(parentAppender.getJSONString());
             } else {
                 System.out.println("Request body is null or empty");
                 response.setStatusCode(400)

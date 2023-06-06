@@ -1,32 +1,35 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
-const Viewport = ({ pointsData, zoom, calculateScaledCoordinate }) => {
-console.log(pointsData)
-  return (
-    <div className="viewport">
-      <div className="coordinate-plane">
-        {pointsData.map((point, index) => {
-          const scaledX = calculateScaledCoordinate(point.x, 800, 800);
-          const scaledY = calculateScaledCoordinate(point.y, 600, 600);
-          return (
-            <div
-              key={index}
-              className="point"
-              style={{
-                width: '4px',
-                height: '4px',
-                background: 'black',
-                position: 'absolute',
-                left: `${scaledX}px`,
-                top: `${scaledY}px`,
-                borderRadius: '50%',
-              }}
-            ></div>
-          );
-        })}
-      </div>
-    </div>
-  );
+const Viewport = (props) => {
+  const canvasRef = useRef(null);
+
+  const draw = (ctx, frameCount) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = '#523424';
+    ctx.beginPath();
+    ctx.arc(50, 100, 20 * Math.sin(frameCount * 0.05) ** 2, 0, 2 * Math.PI);
+    ctx.fill();
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    let frameCount = 0;
+    let animationFrameId;
+
+    const render = () => {
+      frameCount++;
+      draw(context, frameCount);
+      animationFrameId = window.requestAnimationFrame(render);
+    };
+    render();
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [draw]);
+
+  return <canvas ref={canvasRef} width={800} height={500} {...props} />;
 };
 
 export default Viewport;
