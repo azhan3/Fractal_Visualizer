@@ -6,9 +6,11 @@ const Viewport = (props) => {
   const draw = (ctx, frameCount) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.fillStyle = '#523424';
-    ctx.beginPath();
-    ctx.arc(50, 100, 20 * Math.sin(frameCount * 0.05) ** 2, 0, 2 * Math.PI);
+    ctx.arc(100, 100, 50, 0, 2 * Math.PI, false);
     ctx.fill();
+//    ctx.beginPath();
+//    ctx.arc(50, 100, 20 * Math.sin(frameCount * 0.05) ** 2, 0, 2 * Math.PI);
+//    ctx.fill();
   };
 
   useEffect(() => {
