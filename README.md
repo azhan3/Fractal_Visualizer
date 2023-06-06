@@ -1,6 +1,11 @@
-# Fractal Visualizer Project
+# Fractal Visualizer
 
-Welcome to the Fractal Visualizer project! This project aims to create a web application for visualizing fractals using modern web technologies.
+|   |   |
+|---|---|
+| <img src="https://github.com/azhan3/Fractal_Visualizer/assets/96319134/7e2e5723-40a7-4c58-aed4-360f4b123fc5" alt="Logo" width="750"> | This project aims to develop a program that generates visual representations of fractal models derived from the topological properties of Zp. Users can specify a value for p and explore the fractal patterns exhibited by Zp for a range of integers, comparing numbers of specific forms. The program provides an intuitive visual interface to analyze and understand the fractal structures, offering insights into the relationships within Zp. |
+
+
+Welcome to the Fractal Visualizer! This project aims to create a web application for visualizing fractals using modern web technologies.
 
 ## Project Overview
 
