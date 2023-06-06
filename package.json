@@ -1,0 +1,28 @@
+{
+  "name": "fractalsim",
+  "version": "1.0.0",
+  "description": "Visual representation of models of Zp that make it homeomorphic to a fractal for Mr. Zander Karaganis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azhan3/Fractal_Visualizer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/azhan3/Fractal_Visualizer/issues"
+  },
+  "homepage": "https://github.com/azhan3/Fractal_Visualizer#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "create-react-app": "^5.0.1",
+    "socket.io-client": "^4.6.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+}
