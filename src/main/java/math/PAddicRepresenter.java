@@ -1,5 +1,7 @@
 package math;
 
+import util.PointList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,31 +37,29 @@ public class PAddicRepresenter {
         return new double[]{real, imag};
     }
 
-    public List<List<Double>> transformSample(Integer ns) {
-        List<Double> xs = new ArrayList<>();
-        List<Double> ys = new ArrayList<>();
-        List<Double> secondaryXs = new ArrayList<>();
-        List<Double> secondaryYs = new ArrayList<>();
+    public PointList transformSample(Integer ns) {
+        PointList pointList = new PointList();
+        PointList secondaryPointList = new PointList();
 
         for (int n = 0; n <= ns; ++n) {
             double[] planeCoords = toPlane(n);
             double x = planeCoords[0];
             double y = planeCoords[1];
 
-            // Add points to the primary list
-            xs.add(x);
-            ys.add(y);
+            // Add points to the primary PointList
+            pointList.addPoint(x, y);
 
             // Check if the point adheres to the prime race 3x+2
             if ((3 * x + 2) % 1 == 0) {
-                // Add the point to the secondary list
-                secondaryXs.add(x);
-                secondaryYs.add(y);
+                // Add the point to the secondary PointList
+                secondaryPointList.addPoint(x, y);
             }
         }
 
-        return Arrays.asList(xs, ys, secondaryXs, secondaryYs);
+
+        return pointList;
     }
+
 
 
     private List<Integer> intToBase(int n) {

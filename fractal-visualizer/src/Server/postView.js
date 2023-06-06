@@ -16,10 +16,10 @@ module.exports = function (req, res) {
       axios.post('http://localhost:8888/send-data', body)
         .then(response => {
           // Process the response if needed
-            console.log(response.data);
           // Send a response back to the client
           const responseData = {
             text: 'Received new viewport settings',
+            data: response.data
           };
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
