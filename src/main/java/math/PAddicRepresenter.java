@@ -33,7 +33,6 @@ public class PAddicRepresenter {
             imag += power * Math.sin(angle);
         }
 
-        System.out.println(real + " " + imag);
         return new double[]{real, imag};
     }
 

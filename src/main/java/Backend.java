@@ -59,10 +59,20 @@ public class Backend extends AbstractVerticle {
                 float l = data.get("lValue").getAsFloat();
                 PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
                 PointList pl =  newPoints.transformSample(n);
+                double[] minmax = pl.getMinMaxPoints();
+                PointList minimum = new PointList();
+
+                minimum.addPoint(minmax[0], minmax[1]);
+
+                PointList maximum = new PointList();
+
+                maximum.addPoint(minmax[2], minmax[3]);
 
                 JSONAppender parentAppender = new JSONAppender();
+
+                parentAppender.addAppender("min", minimum.toJsonAppender());
+                parentAppender.addAppender("max", maximum.toJsonAppender());
                 parentAppender.addAppender("points", pl.toJsonAppender());
-                System.out.println(parentAppender.toJson());
                 response.putHeader("Content-Type", "text/plain")
                         .end(parentAppender.getJSONString());
             } else {
