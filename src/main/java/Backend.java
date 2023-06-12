@@ -10,7 +10,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import math.Algorithm5Adic;
 import math.Algorithm7Adic;
 import math.PAddicRepresenter;
