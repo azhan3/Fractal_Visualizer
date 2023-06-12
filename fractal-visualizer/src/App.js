@@ -23,7 +23,7 @@ const App = () => {
   };
 
 
-  const handleVisualize = () => {
+  const handleSend = () => {
     const requestData = {
       zoom: zoom,
       nValue: parseInt(nValue, 10),
@@ -119,11 +119,19 @@ const scalePointsToFitCanvas = (pointsData, minX, minY, maxX, maxY, canvasWidth,
 
       const handleClearCanvas=(event)=>{
         setCoordinates([]);
-        setCoordinates(scalePointsToFitCanvas(pointsData["points"], minimum.x, minimum.y, maximum.x, maximum.y, window.innerHeight, window.innerHeight))
       };
+    const handleVisualize = () => {
+        setCoordinates(scalePointsToFitCanvas(pointsData["points"], minimum.x, minimum.y, maximum.x, maximum.y, window.innerHeight, window.innerHeight))
+}
+const handleSizeChange = (event) => {
+  const value = event.target.value;
 
-  const [ coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight ] = useCanvas();
+  setDotSize(value === "" ? "1" : value);
 
+  setSizePlaceholder(value);
+}
+  const [ coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight, dotSize, setDotSize ] = useCanvas();
+  const [sizePlaceholder, setSizePlaceholder] = useState(1);
   return (
     <div>
       <div>
@@ -139,13 +147,18 @@ const scalePointsToFitCanvas = (pointsData, minX, minY, maxX, maxY, canvasWidth,
         onClick={handleCanvasClick} />
 
       <div className="button" >
+              <button onClick={handleVisualize} > VISUALIZE! </button>
+
         <button onClick={handleClearCanvas} > CLEAR </button>
+
+        <input type="text" value={sizePlaceholder} onChange={handleSizeChange} placeholder="Dot Size" />
+
       </div>
         <input type="text" value={nValue} onChange={handleNValueChange} placeholder="Enter N value" />
         <input type="text" value={pValue} onChange={handlePValueChange} placeholder="Enter P value" />
         <input type="text" value={lValue} onChange={handleLValueChange} placeholder="Enter L value" />
 
-        <button ref={visualizeButtonRef} onClick={handleVisualize}>Visualize!</button>
+        <button ref={visualizeButtonRef} onClick={handleSend}>SEND!</button>
 
     </div>
   );

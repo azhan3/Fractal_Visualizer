@@ -11,11 +11,11 @@ import io.vertx.ext.web.client.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import math.Algorithm5Adic;
+import math.Algorithm7Adic;
 import math.PAddicRepresenter;
 import util.JSONAppender;
 import util.PointList;
-
-import java.util.List;
 
 public class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
@@ -57,7 +57,7 @@ public class Backend extends AbstractVerticle {
                 int n = data.get("nValue").getAsInt();
                 int p = data.get("pValue").getAsInt();
                 float l = data.get("lValue").getAsFloat();
-                PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
+                Algorithm7Adic newPoints = new Algorithm7Adic(p, l, 30);
                 PointList pl =  newPoints.transformSample(n);
                 double[] minmax = pl.getMinMaxPoints();
                 PointList minimum = new PointList();

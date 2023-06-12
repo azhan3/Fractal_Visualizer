@@ -49,10 +49,10 @@ public class PAddicRepresenter {
             pointList.addPoint(x, y);
 
             // Check if the point adheres to the prime race 3x+2
-            if ((3 * x + 2) % 1 == 0) {
-                // Add the point to the secondary PointList
-                secondaryPointList.addPoint(x, y);
-            }
+//            if ((3 * x + 2) % 1 == 0) {
+//                // Add the point to the secondary PointList
+//                secondaryPointList.addPoint(x, y);
+//            }
         }
 
 
@@ -74,6 +74,7 @@ public class PAddicRepresenter {
 
     private List<Integer> completedIntToBase(int n) {
         List<Integer> decomposedInt = intToBase(n);
+        //System.out.println(n + " " + decomposedInt);
         int lengthDiff = outputLength - decomposedInt.size();
         for (int i = 0; i < lengthDiff; i++) {
             decomposedInt.add(0);

@@ -2,22 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // Path2D for a Heart SVG
 const cross = "m35,0 v35 h-35 v30 h35 v35 h30 v-35 h35 v-30 h-35 v-35 z"
-const ptSVG = "m30,0 a30,30,0,0,0,0,60 a-30,-30,0,0,0,0,-60 z"
+const ptSVG = "m1,0 a1,1,0,0,0,0,2 a-1,-1,0,0,0,0,-2 z"
 const SVG_PATH = new Path2D(ptSVG);
 
 // Scaling Constants for Canvas
-const SCALE = 0.1;
-const OFFSET = -30;
+const SCALE = 1;
+const OFFSET = SCALE;
 export const canvasWidth = window.innerWidth;
 export const canvasHeight = window.innerHeight;
 
-export function draw(ctx, location){
+export function draw(ctx, location, dotSize){
   ctx.fillStyle = 'black';
   ctx.save();
-  ctx.scale(SCALE, SCALE);
+  ctx.scale(dotSize, dotSize);
   //console.log(location)
-  ctx.translate(location.x / SCALE - OFFSET, location.y / SCALE - OFFSET);
-  ctx.rotate(225 * Math.PI / 180);
+  ctx.translate(location.x / dotSize - OFFSET, location.y / dotSize - OFFSET);
   ctx.fill(SVG_PATH);
   // .restore(): Canvas 2D API restores the most recently saved canvas state
   ctx.restore();
@@ -26,6 +25,7 @@ export function draw(ctx, location){
 export function useCanvas(){
     const canvasRef = useRef(null);
     const [coordinates, setCoordinates] = useState([]);
+  const [dotSize, setDotSize] = useState(1);
 
     useEffect(()=>{
         const canvasObj = canvasRef.current;
@@ -34,8 +34,8 @@ export function useCanvas(){
         ctx.clearRect( 0,0, canvasWidth, canvasHeight );
 
         // draw all coordinates held in state
-        coordinates.forEach((coordinate)=>{draw(ctx, coordinate)});
+        coordinates.forEach((coordinate)=>{draw(ctx, coordinate, dotSize)});
     });
 
-    return [ coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight ];
+    return [ coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight, dotSize, setDotSize ];
 }
