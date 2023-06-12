@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Viewport from './Viewport';
-
+import { useCanvas } from './Viewport';
 const App = () => {
   const [zoom, setZoom] = useState(2);
   const [pointsData, setPointsData] = useState([]);
   const [nValue, setNValue] = useState(1000);
   const [pValue, setPValue] = useState(3);
   const [lValue, setLValue] = useState(0.5);
+
+  const [minimum, setMin] = useState([]);
+  const [maximum, setMax] = useState([]);
 
   const svgRef = useRef(null);
   const visualizeButtonRef = useRef(null);
@@ -19,17 +22,8 @@ const App = () => {
     setZoom(prevZoom => prevZoom / 2);
   };
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch('http://localhost:31415/data'); // Replace with your API endpoint
-      const data = await response.json();
-      setPointsData(data.points); // Update pointsData state with fetched data
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
 
-  const handleVisualize = () => {
+  const handleSend = () => {
     const requestData = {
       zoom: zoom,
       nValue: parseInt(nValue, 10),
@@ -50,7 +44,11 @@ const App = () => {
       .then(response => response.json())
       .then(data => {
         // Process the response data if needed
-        console.log(data);
+        console.log(data.text)
+        console.log(data)
+        setPointsData(data.data.points);
+        setMax(data.data.max.points[0])
+        setMin(data.data.min.points[0])
       })
       .catch(error => {
         console.error('Error sending data:', error);
@@ -79,21 +77,10 @@ const App = () => {
     };
   }, []);
 
-  useEffect(() => {
-    visualizeButtonRef.current.addEventListener('click', fetchData);
-    return () => {
-      visualizeButtonRef.current.removeEventListener('click', fetchData);
-    };
-  }, []);
+
 
   const renderPoints = () => {
-    return pointsData.map((point, index) => {
-      const scaledX = calculateScaledCoordinate(point.x, 800, 800);
-      const scaledY = calculateScaledCoordinate(point.y, 600, 600);
-      return (
-        <circle key={index} cx={scaledX} cy={scaledY} r="2" fill="black" />
-      );
-    });
+
   };
 
   const handleNValueChange = (event) => {
@@ -106,23 +93,72 @@ const App = () => {
   const handleLValueChange = (event) => {
     setLValue(event.target.value);
   };
+const scalePointsToFitCanvas = (pointsData, minX, minY, maxX, maxY, canvasWidth, canvasHeight) => {
+  const scaledPoints = [];
 
+  const scaleX = canvasWidth / (maxX - minX);
+  const scaleY = canvasHeight / (maxY - minY);
+
+  for (let i = 0; i < pointsData.length; i++) {
+    const point = pointsData[i];
+    const scaledX = (point.x - minX) * scaleX;
+    const scaledY = (point.y - minY) * scaleY;
+
+    scaledPoints.push({ x: scaledX, y: scaledY });
+  }
+
+  return scaledPoints;
+}
+    const handleCanvasClick=(event)=>{
+      // on each click get current mouse location
+      const currentCoord = { x: event.clientX, y: event.clientY };
+      // add the newest mouse location to an array in state
+      console.log(coordinates)
+      setCoordinates([...coordinates, currentCoord]);
+    };
+
+      const handleClearCanvas=(event)=>{
+        setCoordinates([]);
+      };
+    const handleVisualize = () => {
+        setCoordinates(scalePointsToFitCanvas(pointsData["points"], minimum.x, minimum.y, maximum.x, maximum.y, window.innerHeight, window.innerHeight))
+}
+const handleSizeChange = (event) => {
+  const value = event.target.value;
+
+  setDotSize(value === "" ? "1" : value);
+
+  setSizePlaceholder(value);
+}
+  const [ coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight, dotSize, setDotSize ] = useCanvas();
+  const [sizePlaceholder, setSizePlaceholder] = useState(1);
   return (
     <div>
       <div>
         <button onClick={handleZoomIn}>Zoom In</button>
         <button onClick={handleZoomOut}>Zoom Out</button>
       </div>
-            <Viewport
 
-            />
-      <div>
+      <canvas
+        className="App-canvas"
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        onClick={handleCanvasClick} />
+
+      <div className="button" >
+              <button onClick={handleVisualize} > VISUALIZE! </button>
+
+        <button onClick={handleClearCanvas} > CLEAR </button>
+
+        <input type="text" value={sizePlaceholder} onChange={handleSizeChange} placeholder="Dot Size" />
+
+      </div>
         <input type="text" value={nValue} onChange={handleNValueChange} placeholder="Enter N value" />
         <input type="text" value={pValue} onChange={handlePValueChange} placeholder="Enter P value" />
         <input type="text" value={lValue} onChange={handleLValueChange} placeholder="Enter L value" />
 
-        <button ref={visualizeButtonRef} onClick={handleVisualize}>Visualize!</button>
-      </div>
+        <button ref={visualizeButtonRef} onClick={handleSend}>SEND!</button>
 
     </div>
   );

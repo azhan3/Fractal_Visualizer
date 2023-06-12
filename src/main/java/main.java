@@ -3,6 +3,7 @@ import math.PAddicRepresenter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import util.PointList;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +19,9 @@ public class main extends AbstractVerticle {
         DeploymentOptions options = new DeploymentOptions().setInstances(1);
         Backend test = new Backend();
         vertx.deployVerticle(test, options);
+
+        PAddicRepresenter aa = new PAddicRepresenter(2, 0.45,30);
+        PointList bb = aa.transformSample(200);
 
 //        System.out.println(parentAppender.toJson());
 //
