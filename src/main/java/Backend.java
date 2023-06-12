@@ -14,10 +14,12 @@ import com.google.gson.JsonObject;
 import math.Algorithm5Adic;
 import math.Algorithm7Adic;
 import math.PAddicRepresenter;
+
 import util.JSONAppender;
 import util.PointList;
 
 public class Backend extends AbstractVerticle {
+    
     private final Gson gson = new Gson();
 
     @Override
@@ -38,6 +40,7 @@ public class Backend extends AbstractVerticle {
     }
 
     private void handlePostData(RoutingContext routingContext) {
+        
         HttpServerResponse response = routingContext.response();
         HttpServerRequest request = routingContext.request();
 
@@ -86,6 +89,7 @@ public class Backend extends AbstractVerticle {
 
 
     public void send(JSONAppender pointList) {
+        
         WebClient client = WebClient.create(vertx);
         String url = "http://localhost:31415/data";
 
