@@ -2,7 +2,6 @@ package util;
 
 import com.google.gson.JsonObject;
 import util.JSONAppender;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ public class PointList {
         this.xList = new ArrayList<>();
         this.yList = new ArrayList<>();
     }
+    
     public double[] getMinMaxPoints() {
         if (isEmpty()) {
             return new double[]{Double.NaN, Double.NaN, Double.NaN, Double.NaN};
@@ -36,6 +36,7 @@ public class PointList {
 
         return new double[]{minX, minY, maxX, maxY};
     }
+    
     public void addPoint(double x, double y) {
         xList.add(x);
         yList.add(y);
