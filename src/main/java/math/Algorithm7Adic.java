@@ -16,7 +16,6 @@ public class Algorithm7Adic {
     public double[] toPlane(int n) {
         int p = this.p;
         double l = this.l;
-        int outputLength = this.outputLength;
 
         double real = 0.0;
         double imag = 0.0;
@@ -32,20 +31,22 @@ public class Algorithm7Adic {
             } else if (c == 2) {
                 double power = Math.pow(l, k);
                 real += power / (p - 1);
-                imag += power / (p - 1);
+                imag += (Math.sqrt(3) * power) / (p - 1);
             } else if (c == 3) {
                 double power = Math.pow(l, k);
-                imag += power / (p - 1);
+                real -= power / (p - 1);
+                imag += (Math.sqrt(3) * power) / (p - 1);
             } else if (c == 4) {
                 double power = Math.pow(l, k);
                 real -= power / (p - 1);
-                imag += power / (p - 1);
             } else if (c == 5) {
                 double power = Math.pow(l, k);
                 real -= power / (p - 1);
+                imag -= (Math.sqrt(3) * power) / (p - 1);
             } else if (c == 6) {
                 double power = Math.pow(l, k);
-                imag -= power / (p - 1);
+                real += power / (p - 1);
+                imag -= (Math.sqrt(3) * power) / (p - 1);
             }
 
             k++;
@@ -53,6 +54,7 @@ public class Algorithm7Adic {
 
         return new double[]{real, imag};
     }
+
 
     public PointList transformSample(int ns) {
         PointList pointList = new PointList();

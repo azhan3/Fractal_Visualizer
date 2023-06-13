@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+}
+
+.sidebar {
+  width: 280px; /* Adjust the width as needed */
+  background-color: #B0BABF; /* Set the background color */
+  padding: 20px;
+  flex-shrink: 0; /* Prevent the sidebar from shrinking */
+  transition: width 0.3s ease; /* Add transition for smooth animation */
+}
+
+.container.collapsed .sidebar {
+  width: 0;
+  padding: 20px 0; /* Hide the sidebar and remove padding */
+}
+
+/* Rest of the CSS styles for buttons, inputs, canvas, etc. */
+
+/* Styles for the toggle button */
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 100px;
+  cursor: pointer;
+}
+
+.sidebar-toggle .icon {
+  width: 100px;
+  height: 100px;
+  /* Add styles for the toggle button icon */
+}
+.container.collapsed .button,
+.container.collapsed label,
+.container.collapsed .switch-button-container,
+.container.collapsed .form__field {
+  transform: translateX(-130%);
+  transition: transform 0.3s ease;
+}
+.container .button,
+.container label,
+.container.collapsed .switch-button-container,
+.container .form__field {
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+.main {
+  flex: 1;
+  /* Add styles for the main content */
+}
+
+.App-canvas {
+  /* Add styles for the canvas */
+}

@@ -11,6 +11,7 @@ import io.vertx.ext.web.client.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import math.Algorithm3Adic;
 import math.Algorithm5Adic;
 import math.Algorithm7Adic;
 import math.PAddicRepresenter;
@@ -56,9 +57,34 @@ public class Backend extends AbstractVerticle {
                 // Process the data and perform any necessary operations here
                 int n = data.get("nValue").getAsInt();
                 int p = data.get("pValue").getAsInt();
+                int algo = data.get("Algorithm").getAsInt();
                 float l = data.get("lValue").getAsFloat();
-                Algorithm7Adic newPoints = new Algorithm7Adic(p, l, 30);
-                PointList pl =  newPoints.transformSample(n);
+
+                PointList pl;
+
+                if (algo == 1) {
+                    PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
+                    pl = newPoints.transformSample(n);
+                } else {
+                    switch (p) {
+                        case 3:
+                            Algorithm3Adic newPoints3 = new Algorithm3Adic(p, l, 30);
+                            pl = newPoints3.transformSample(n);
+                            break;
+                        case 5:
+                            Algorithm5Adic newPoints5 = new Algorithm5Adic(p, l, 30);
+                            pl = newPoints5.transformSample(n);
+                            break;
+                        case 7:
+                            Algorithm7Adic newPoints7 = new Algorithm7Adic(p, l, 30);
+                            pl = newPoints7.transformSample(n);
+                            break;
+                        default:
+                            PAddicRepresenter newPointsDefault = new PAddicRepresenter(p, l, 30);
+                            pl = newPointsDefault.transformSample(n);
+                    }
+                }
+
                 double[] minmax = pl.getMinMaxPoints();
                 PointList minimum = new PointList();
 

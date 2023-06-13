@@ -1,0 +1,29 @@
+.border {
+	--b: 5px;
+	--c: 15em;
+	--r: 2em;
+	position: relative;
+	margin: 1em auto;
+	border: solid var(--b) transparent;
+	padding: 1em;
+			z-index: -1;
+
+  width: var(--canvas-width);
+  height: var(--canvas-height);
+	&::before {
+		position: absolute;
+		z-index: -1;
+		inset: calc(-1*var(--b));
+		border: inherit;
+		border-radius: var(--r);
+		background: linear-gradient(#253759, #466273, #B78C38) border-box;
+		--corner:
+			conic-gradient(from -90deg at var(--c) var(--c), red 25%, #0000 0)
+				0 0/ calc(100% - var(--c))  calc(100% - var(--c)) border-box;
+		--inner: conic-gradient(red 0 0) padding-box;
+		-webkit-mask: var(--corner), var(--inner);
+		-webkit-mask-composite: source-out;
+						mask: var(--corner) subtract, var(--inner);
+		content: ''
+	}
+}
