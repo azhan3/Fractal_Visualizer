@@ -1,0 +1,59 @@
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-toggle .selected-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.dropdown-toggle .dropdown-icon {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #555 transparent transparent transparent;
+    margin-left: 5px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    list-style-type: none;
+}
+
+.dropdown-item {
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+/* Additional Styles */
+.container {
+    /* Your container styles */
+}
+
+.floating-area {
+    /* Your floating area styles */
+}
+
+/* Rest of your styles... */

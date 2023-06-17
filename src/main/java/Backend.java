@@ -1,3 +1,5 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -11,12 +13,12 @@ import io.vertx.ext.web.client.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import math.Algorithm3Adic;
-import math.Algorithm5Adic;
-import math.Algorithm7Adic;
-import math.PAddicRepresenter;
+import math.*;
+import math.book.Algorithm3Adic;
 import util.JSONAppender;
 import util.PointList;
+
+import java.util.List;
 
 public class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
@@ -59,33 +61,23 @@ public class Backend extends AbstractVerticle {
                 int p = data.get("pValue").getAsInt();
                 int algo = data.get("Algorithm").getAsInt();
                 float l = data.get("lValue").getAsFloat();
+                float zoom = data.get("zoom").getAsFloat();
+                boolean useRecommendedL = data.get("RecommendL").getAsBoolean();
+                JsonObject primeRaces = data.get("PrimeRaces").getAsJsonObject(); // Retrieve as JsonObject instead of JsonArray
 
-                PointList pl;
+                l = useRecommendedL ? (float) MathEquations.scaleFactor((algo == 1 ? p : p-1)) : l;
+                n *= zoom;
+                List<PointList> pl;
 
                 if (algo == 1) {
                     PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
-                    pl = newPoints.transformSample(n);
+                    pl = newPoints.transformSample(n ,primeRaces);
                 } else {
-                    switch (p) {
-                        case 3:
-                            Algorithm3Adic newPoints3 = new Algorithm3Adic(p, l, 30);
-                            pl = newPoints3.transformSample(n);
-                            break;
-                        case 5:
-                            Algorithm5Adic newPoints5 = new Algorithm5Adic(p, l, 30);
-                            pl = newPoints5.transformSample(n);
-                            break;
-                        case 7:
-                            Algorithm7Adic newPoints7 = new Algorithm7Adic(p, l, 30);
-                            pl = newPoints7.transformSample(n);
-                            break;
-                        default:
-                            PAddicRepresenter newPointsDefault = new PAddicRepresenter(p, l, 30);
-                            pl = newPointsDefault.transformSample(n);
-                    }
+                    AlgorithmGeneralCase newPoints2 = new AlgorithmGeneralCase(p, l, 30);
+                    pl = newPoints2.transformSample(n, primeRaces);
                 }
 
-                double[] minmax = pl.getMinMaxPoints();
+                double[] minmax = pl.get(0).getMinMaxPoints();
                 PointList minimum = new PointList();
 
                 minimum.addPoint(minmax[0], minmax[1]);
@@ -98,7 +90,15 @@ public class Backend extends AbstractVerticle {
 
                 parentAppender.addAppender("min", minimum.toJsonAppender());
                 parentAppender.addAppender("max", maximum.toJsonAppender());
-                parentAppender.addAppender("points", pl.toJsonAppender());
+                parentAppender.addAppender("points", pl.get(0).toJsonAppender());
+
+                JSONAppender PrimeRaces = new JSONAppender();
+
+                for (int i = 1 ; i < pl.size() ; ++i) {
+                    PrimeRaces.addAppender(Integer.toString(i), pl.get(i).toJsonAppender());
+                }
+
+                parentAppender.addAppender("PrimeRaces", PrimeRaces);
                 response.putHeader("Content-Type", "text/plain")
                         .end(parentAppender.getJSONString());
             } else {

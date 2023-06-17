@@ -6,7 +6,6 @@ import io.vertx.core.Vertx;
 import util.PointList;
 
 import java.io.IOException;
-import java.util.List;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -20,8 +19,6 @@ public class main extends AbstractVerticle {
         Backend test = new Backend();
         vertx.deployVerticle(test, options);
 
-        PAddicRepresenter aa = new PAddicRepresenter(2, 0.45,30);
-        PointList bb = aa.transformSample(200);
 
 //        System.out.println(parentAppender.toJson());
 //

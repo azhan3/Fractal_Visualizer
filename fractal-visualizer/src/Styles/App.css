@@ -9,6 +9,59 @@ box-sizing: border-box;
 
 .main {
   flex: 1;
+  width: 80%;
+
   padding: 10px; /* Add the desired spacing value */
   /* Add any additional styles for the main content */
+}
+.floating-area::-webkit-scrollbar {
+  display: none;
+}
+
+.floating-area {
+  padding: 10px;
+  position: absolute;
+  background-color: #b0babf;
+  border-radius: 1em;
+  top: 10%;
+  right: 10%;
+  z-index: 999;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  overflow-y: scroll;}
+
+.area {
+  width: 300px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.area-title {
+  padding: 10px;
+  background-color: #f0f0f0;
+  font-weight: bold;
+  cursor: move;
+}
+
+.area-content {
+  padding: 10px;
+}
+
+.area-content label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.area-content input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.prime-races-header {
+  font-size: 1.5em;
+}
+
+.prime-race-label {
+  font-size: 2em;
 }

@@ -1,10 +1,20 @@
 .container {
   display: flex;
+  height: 100vh;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar {
-  width: 280px; /* Adjust the width as needed */
-  background-color: #B0BABF; /* Set the background color */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  overflow-y: scroll;
+  height: 100%;
+  z-index: 100;
+  width: 300px; /* Adjust the width as needed */
+  background-color: #b0babf; /* Set the background color */
   padding: 20px;
   flex-shrink: 0; /* Prevent the sidebar from shrinking */
   transition: width 0.3s ease; /* Add transition for smooth animation */
@@ -23,6 +33,7 @@
   top: 10px;
   right: 100px;
   cursor: pointer;
+  z-index: 100;
 }
 
 .sidebar-toggle .icon {
@@ -30,20 +41,22 @@
   height: 100px;
   /* Add styles for the toggle button icon */
 }
+
 .container.collapsed .button,
-.container.collapsed label,
 .container.collapsed .switch-button-container,
+.container.collapsed .switch,
 .container.collapsed .form__field {
   transform: translateX(-130%);
   transition: transform 0.3s ease;
 }
-.container .button,
-.container label,
-.container.collapsed .switch-button-container,
-.container .form__field {
+
+.container:not(.collapsed) .button,
+.container:not(.collapsed) .switch-button-container,
+.container:not(.collapsed) .form__field {
   transform: translateX(0);
   transition: transform 0.3s ease;
 }
+
 .main {
   flex: 1;
   /* Add styles for the main content */

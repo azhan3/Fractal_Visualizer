@@ -1,16 +1,16 @@
 package math;
 
 public class MathEquations {
-    public static float ScaleFactor(int n) {
-        float r = 0;
+    public static double scaleFactor(int n) {
+        if (n == 4) n = 6;
+        int floor = n / 4;
+        double sum = 0.0;
 
-        float sum = 1;
-        for (int k = 1 ; k <= n / 4 ; k++) {
-            sum += Math.cos((2.0f * Math.PI) / (float)n);
+        for (int k = 1; k <= floor; k++) {
+            double angle = (2 * Math.PI * k) / n;
+            sum += Math.cos(angle);
         }
 
-        r = 1.0f / (2.0f * sum);
-
-        return r;
+        return 1 / (2 * (1 + sum));
     }
 }

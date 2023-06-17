@@ -1,16 +1,16 @@
 :root {
-  --canvas-width: var(--viewport-canvas-height);
-  --canvas-height: var(--viewport-canvas-height);
+  --border-width: var(--border-width, 100%); /* Default to 100% if the variable is not set */
+  --border-height: var(--border-height, 100%); /* Default to 100% if the variable is not set */
 }
 
 .viewport {
-  width: var(--canvas-width);
-  height: var(--canvas-height);
+  width: var(--border-width);
+  height: var(--border-height);
   border: 1px solid black;
   overflow: auto;
 }
 
 canvas {
-  width: 100%;
-  height: 100%;
+  /*background-color: #9b9b9b;*/
+
 }

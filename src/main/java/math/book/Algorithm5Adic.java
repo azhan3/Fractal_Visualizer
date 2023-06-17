@@ -1,18 +1,13 @@
-package math;
+package math.book;
 
 import util.PointList;
 
-public class Algorithm5Adic {
-    private int p;
-    private double l;
-    private int outputLength;
-
+public class Algorithm5Adic extends AlgorithmBoilerplate {
     public Algorithm5Adic(int p, double l, int outputLength) {
-        this.p = p;
-        this.l = l;
-        this.outputLength = outputLength;
+        super(p, l, outputLength);
     }
 
+    @Override
     public double[] toPlane(int n) {
         int p = this.p;
         double l = this.l;
@@ -45,18 +40,4 @@ public class Algorithm5Adic {
 
         return new double[]{real, imag};
     }
-
-    public PointList transformSample(int ns) {
-        PointList pointList = new PointList();
-
-        for (int n = 0; n <= ns; ++n) {
-            double[] planeCoords = toPlane(n);
-            double x = planeCoords[0];
-            double y = planeCoords[1];
-            pointList.addPoint(x, y);
-        }
-
-        return pointList;
-    }
-
 }

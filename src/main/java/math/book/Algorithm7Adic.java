@@ -1,10 +1,9 @@
-package math;
+package math.book;
 
-import math.book.AlgorithmBoilerplate;
 import util.PointList;
 
-public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
-    public AlgorithmGeneralCase(int p, double l, int outputLength) {
+public class Algorithm7Adic extends AlgorithmBoilerplate {
+    public Algorithm7Adic(int p, double l, int outputLength) {
         super(p, l, outputLength);
     }
 
@@ -13,10 +12,6 @@ public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
         int p = this.p;
         double l = this.l;
         int outputLength = this.outputLength;
-
-        if (n == 0) {
-            return new double[]{1.0, 0.0};  // Center point
-        }
 
         double real = 0.0;
         double imag = 0.0;
@@ -27,7 +22,7 @@ public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
             n = n / p;
 
             if (c == 0) {
-                real += 0.0;  // Center point
+                real += 1.0;  // Center point
             } else {
                 double angle = Math.toRadians((c - 1) * 360.0 / (p - 1));
                 double power = Math.pow(l, k);

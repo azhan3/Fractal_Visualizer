@@ -1,18 +1,27 @@
 .border {
+	transition-property: width;
+	transition-duration: 0.3s;
+	transition-timing-function: linear;
+}
+.container.collapsed .border {
+	width: 100%;
+}
+
+.container .border {
 	--b: 5px;
 	--c: 15em;
 	--r: 2em;
 	position: relative;
-	margin: 1em auto;
 	border: solid var(--b) transparent;
-	padding: 1em;
-			z-index: -1;
 
-  width: var(--canvas-width);
-  height: var(--canvas-height);
+
+  width: 100%;
+	height: 100%;
+/*  height: var(--border-height);*/
+
 	&::before {
-		position: absolute;
-		z-index: -1;
+
+		 position: absolute;
 		inset: calc(-1*var(--b));
 		border: inherit;
 		border-radius: var(--r);
@@ -23,7 +32,24 @@
 		--inner: conic-gradient(red 0 0) padding-box;
 		-webkit-mask: var(--corner), var(--inner);
 		-webkit-mask-composite: source-out;
-						mask: var(--corner) subtract, var(--inner);
-		content: ''
+		mask: var(--corner) subtract, var(--inner);
+		content: '';
 	}
+}
+.container.collapsed .canvas-wrapper {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.container .canvas-wrapper {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
 }

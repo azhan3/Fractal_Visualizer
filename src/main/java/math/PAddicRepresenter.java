@@ -1,9 +1,10 @@
 package math;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import util.PointList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class PAddicRepresenter {
@@ -36,23 +37,29 @@ public class PAddicRepresenter {
         return new double[]{real, imag};
     }
 
-    public PointList transformSample(Integer ns) {
-        PointList pointList = new PointList();
+    public List<PointList> transformSample(Integer ns, JsonObject primeRaces) {
         PointList secondaryPointList = new PointList();
+        JsonArray primes = primeRaces.get("primes").getAsJsonArray();
+        JsonArray remainders = primeRaces.get("remainders").getAsJsonArray();
+        int num = primes.size();
 
+        List<PointList>pointList = new ArrayList<PointList>(num+1);
+        for (int i = 0 ; i <= num ; ++i) {
+            pointList.add(new PointList());
+        }
         for (int n = 0; n <= ns; ++n) {
             double[] planeCoords = toPlane(n);
             double x = planeCoords[0];
             double y = planeCoords[1];
 
             // Add points to the primary PointList
-            pointList.addPoint(x, y);
+            pointList.get(0).addPoint(x, y);
 
-            // Check if the point adheres to the prime race 3x+2
-//            if ((3 * x + 2) % 1 == 0) {
-//                // Add the point to the secondary PointList
-//                secondaryPointList.addPoint(x, y);
-//            }
+            for (int j = 0; j < num ; ++j) {
+                if (n % primes.get(j).getAsInt() == remainders.get(j).getAsInt()) {
+                    pointList.get(j+1).addPoint(x, y);
+                }
+            }
         }
 
 
