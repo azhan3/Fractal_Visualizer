@@ -10,7 +10,7 @@ module.exports = function (req, res) {
   req.on('end', function () {
     try {
       const viewData = JSON.parse(body);
-      console.log(viewData);
+      //console.log(viewData);
 
       // Send a request to http://localhost:8888/send-data with the received JSON data
       axios.post('http://localhost:8888/send-data', body)

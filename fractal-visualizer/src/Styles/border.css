@@ -15,27 +15,28 @@
 	border: solid var(--b) transparent;
 
 
-  width: 100%;
+	width: 100%;
 	height: 100%;
+}
 /*  height: var(--border-height);*/
 
-	&::before {
+.container .border::before {
 
-		 position: absolute;
-		inset: calc(-1*var(--b));
-		border: inherit;
-		border-radius: var(--r);
-		background: linear-gradient(#253759, #466273, #B78C38) border-box;
-		--corner:
-			conic-gradient(from -90deg at var(--c) var(--c), red 25%, #0000 0)
-				0 0/ calc(100% - var(--c))  calc(100% - var(--c)) border-box;
-		--inner: conic-gradient(red 0 0) padding-box;
-		-webkit-mask: var(--corner), var(--inner);
-		-webkit-mask-composite: source-out;
-		mask: var(--corner) subtract, var(--inner);
-		content: '';
-	}
+	 position: absolute;
+	inset: calc(-1*var(--b));
+	border: inherit;
+	border-radius: var(--r);
+	background: linear-gradient(#253759, #466273, #B78C38) border-box;
+	--corner:
+		conic-gradient(from -90deg at var(--c) var(--c), red 25%, #0000 0)
+			0 0/ calc(100% - var(--c))  calc(100% - var(--c)) border-box;
+	--inner: conic-gradient(red 0 0) padding-box;
+	-webkit-mask: var(--corner), var(--inner);
+	-webkit-mask-composite: source-out;
+	mask: var(--corner) subtract, var(--inner);
+	content: '';
 }
+
 .container.collapsed .canvas-wrapper {
 	width: 100%;
 	height: 100%;

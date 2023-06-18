@@ -8,7 +8,7 @@ module.exports = function (req, res) {
   if (reqUrl.query.data) {
     name = reqUrl.query.data;
   }
-  console.log(data);
+  //console.log(data);
   const response = {
     points: data,
   };

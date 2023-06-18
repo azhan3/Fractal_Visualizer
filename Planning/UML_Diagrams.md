@@ -7,7 +7,7 @@ In the UML diagram below, relations are displayed between the following classes:
 - JSONAppender.java
 - PointList.java
 - PrimeRaces.java
-- Backend.java
+- org.backend.Backend.java
 
 ### Library Classes:
 - AbstractVerticle.java

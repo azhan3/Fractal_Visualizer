@@ -9,7 +9,7 @@ module.exports = function (req, res) {
   req.on('end', function () {
     try {
       const postBody = JSON.parse(body);
-        console.log(postBody);
+        //console.log(postBody);
       data = postBody.points;
 
       const response = {

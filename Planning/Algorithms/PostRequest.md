@@ -1,4 +1,4 @@
-# Visualize Button Flow with Vert.x Backend
+# Visualize Button Flow with Vert.x org.backend.Backend
 
 1. User clicks the "Visualize" button.
 2. The click event handler function is triggered.
@@ -16,7 +16,7 @@
 2. Extract the necessary information from the request object (n, p, l).
 3. Route the request to the Vert.x backend for further processing.
 
-## Vert.x Backend (Java)
+## Vert.x org.backend.Backend (Java)
 
 1. Receive the request with the extracted values (n, p, l).
 2. Create an instance of PAddicRepresenter with the provided p and l values.

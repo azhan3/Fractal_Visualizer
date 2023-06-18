@@ -1,6 +1,6 @@
-# Data Flow: Vert.x Backend to Node.js Server to React Frontend
+# Data Flow: Vert.x org.backend.Backend to Node.js Server to React Frontend
 
-## Vert.x Backend (Java)
+## Vert.x org.backend.Backend (Java)
 
 1. Generate and store points in a PointList object.
 2. Convert the points to JSON.

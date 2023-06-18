@@ -9,16 +9,34 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
+}
+
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     implementation 'io.vertx:vertx-core:4.4.0'
     implementation 'io.vertx:vertx-web:4.4.0'
     implementation 'io.vertx:vertx-web-client:4.4.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.backend.main' // Replace 'com.example.Main' with the fully qualified name of your main class
+    }
+    duplicatesStrategy = 'exclude'
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

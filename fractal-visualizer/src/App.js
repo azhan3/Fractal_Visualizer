@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
-import Viewport from "./Viewport";
+import React, { useState, useRef } from "react";
 import { useCanvas } from "./Viewport";
 import ToggleSwitch, { choice } from "./ToggleSwitch";
 import "./Styles/input.scss";
@@ -11,6 +10,7 @@ import "./Styles/border.css";
 import "./Styles/checkbox.css";
 import "./Styles/color-chooser.css";
 import "./Styles/toggle-small.scss";
+import "./Styles/loading.css";
 import Draggable from "react-draggable";
 
 const App = () => {
@@ -35,25 +35,26 @@ const App = () => {
   const [primesArray, setPrimesArray] = useState([]);
   const [remaindersArray, setRemaindersArray] = useState([]);
   const [primeRacesData, setPrimeRacesData] = useState([]);
+
+  const [loading, setLoading] = useState(false);
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
 
   const handleZoomIn = () => {
-    console.log("Zoom In...");
     setZoom((prevZoom) => prevZoom * 2);
   };
 
   const handleZoomOut = () => {
-    console.log("Zoom Out...");
     setZoom((prevZoom) => prevZoom / 2);
   };
 
   const handleSend = () => {
+    // Show the loading animation
+    setLoading(true);
+
     setPrimesArray(primes.trim() ? primes.split(" ").map(Number) : []);
-    setRemaindersArray(
-        remainders.trim() ? remainders.split(" ").map(Number) : []
-    );
+    setRemaindersArray(remainders.trim() ? remainders.split(" ").map(Number) : []);
     const requestData = {
       zoom: zoom,
       nValue: parseInt(nValue, 10),
@@ -79,11 +80,8 @@ const App = () => {
         .then((response) => response.json())
         .then((data) => {
           // Process the response data if needed
-          console.log(data.text);
-          console.log(data);
           setPointsData(data.data.points);
           setPrimeRacesData(data.data.PrimeRaces);
-          console.log(Object.keys(data.data.PrimeRaces).length);
           let n = Object.keys(data.data.PrimeRaces).length;
 
           setPrimeRacesToggles(Array(n).fill(false));
@@ -91,13 +89,15 @@ const App = () => {
 
           setMax(data.data.max.points[0]);
           setMin(data.data.min.points[0]);
+          setLoading(false); // Hide the loading animation
           return data; // Pass data to the next .then()
         })
-
         .catch((error) => {
           console.error("Error sending data:", error);
+          setLoading(false); // Hide the loading animation in case of an error
         });
   };
+
 
   const renderPoints = () => {};
 
@@ -145,22 +145,12 @@ const App = () => {
     return scaledPoints;
   };
 
-  //  const handleCanvasClick = (event) => {
-  //    // on each click get current mouse location
-  //    const currentCoord = { x: event.clientX, y: event.clientY };
-  //    // add the newest mouse location to an array in state
-  //    console.log(coordinates);
-  //    setCoordinates([...coordinates, currentCoord]);
-  //  };
-
   const handleClearCanvas = (event) => {
     setCoordinates([]);
     setPrimeRacesPTS([]);
   };
   const handleVisualize = () => {
-    console.log(PrimeRacesToggles);
-
-    console.log("Visualize");
+    if (pointsData.length === 0) return
     setCoordinates(
         scalePointsToFitCanvas(
             pointsData["points"],
@@ -187,7 +177,6 @@ const App = () => {
           )
       );
     }
-    console.log(PrimePts);
     setPrimeRacesPTS(PrimePts);
     setCanvasWidth(window.innerWidth * zoom);
     setCanvasHeight(window.innerHeight * zoom + 20 * zoom);
@@ -222,10 +211,6 @@ const App = () => {
   ] = useCanvas(window.innerWidth, window.innerHeight);
   const [sizePlaceholder, setSizePlaceholder] = useState(1);
   const handleChoiceChange = () => {};
-  const test = () => {
-    console.log(`Canvas: ${canvasWidth * zoom} ${canvasHeight * zoom}`);
-    console.log(`Zoom: ${zoom}`);
-  };
 
   const handleCheckboxChange = (event) => {
     setUseRecommendedScaleFactor(event.target.checked);
@@ -641,14 +626,49 @@ const App = () => {
         <div className="main">
           <div className="border">
             <div className="canvas-wrapper">
-              <Draggable>
-                <canvas
-                    className="App-canvas"
-                    ref={canvasRef}
-                    width={canvasWidth}
-                    height={canvasHeight}
-                />
-              </Draggable>
+              {loading ? ( // Render the loading animation if loading is true
+                  <div className="loading-animation">
+                    <svg className="ip" viewBox="0 0 256 128" width="256px" height="128px"
+                         xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stop-color="#5ebd3e"/>
+                          <stop offset="33%" stop-color="#ffb900"/>
+                          <stop offset="67%" stop-color="#f78200"/>
+                          <stop offset="100%" stop-color="#e23838"/>
+                        </linearGradient>
+                        <linearGradient id="grad2" x1="1" y1="0" x2="0" y2="0">
+                          <stop offset="0%" stop-color="#e23838"/>
+                          <stop offset="33%" stop-color="#973999"/>
+                          <stop offset="67%" stop-color="#009cdf"/>
+                          <stop offset="100%" stop-color="#5ebd3e"/>
+                        </linearGradient>
+                      </defs>
+                      <g fill="none" stroke-linecap="round" stroke-width="16">
+                        <g className="ip__track" stroke="#ddd">
+                          <path d="M8,64s0-56,60-56,60,112,120,112,60-56,60-56"/>
+                          <path d="M248,64s0-56-60-56-60,112-120,112S8,64,8,64"/>
+                        </g>
+                        <g stroke-dasharray="180 656">
+                          <path className="ip__worm1" stroke="url(#grad1)" stroke-dashoffset="0"
+                                d="M8,64s0-56,60-56,60,112,120,112,60-56,60-56"/>
+                          <path className="ip__worm2" stroke="url(#grad2)" stroke-dashoffset="358"
+                                d="M248,64s0-56-60-56-60,112-120,112S8,64,8,64"/>
+                        </g>
+                      </g>
+                    </svg>
+                  </div>
+              ) : (
+                  // Render the existing content if loading is false
+                  <Draggable>
+                    <canvas
+                        className="App-canvas"
+                        ref={canvasRef}
+                        width={canvasWidth}
+                        height={canvasHeight}
+                    />
+                  </Draggable>
+              )}
             </div>
           </div>
         </div>
