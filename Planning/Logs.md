@@ -87,17 +87,14 @@
   >- Documented class diagrams, sequence diagrams, and component diagrams
   >- Updated and refined the diagrams based on project updates
 
-> ## June 16
+## June 16
 >- **Electron App**
   >- Created electron app boiler plate and various files necessary to run electron app with react js
   >- Connected react and electron app to impove ui and connect our server to the electron app port  
 
+## June 18
 >- **Algorithms**
-  >- Updated algorithms to have mroe specific algorithms
-
-> ## June 18
->- **Algorithms**
-  >- further refining of algorithms
+  >- improving pre-existing algorithms to be more specifc representation of java code 
 
 >- **Electron App**
   >- Finished connecting our server and electron app with react 
