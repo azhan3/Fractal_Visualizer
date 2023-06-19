@@ -20,6 +20,7 @@ const createWindow =  () => {
             nodeIntegration: true,
         },
         autoHideMenuBar: true,
+        icon: `${__dirname}/summative-logo.png`
     });
 
     mainWindow.loadURL('http://localhost:5500');

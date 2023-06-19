@@ -4,7 +4,8 @@
   "description": "Visual representation of models of Zp that make it homeomorphic to a fractal for Mr. Zander Karaganis",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg run.bat"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,18 @@
     "socket.io-client": "^4.6.1"
   },
   "devDependencies": {
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "scripts": "run.bat",
+    "assets": [
+      "/fractal-visualizer/",
+      "/build/libs/FractalSim-1.0-SNAPSHOT.jar",
+      "/electron-app/"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
   }
 }

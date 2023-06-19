@@ -7,6 +7,9 @@
 
 Welcome to the Fractal Visualizer! This project aims to create a web application for visualizing fractals using modern web technologies.
 
+<h1 style="color:darkred">WARNING: Currently, executing run.bat and closing the Electron.js window will close all active cmd.exe consoles running on the system  
+ text</h1>
+
 ## Project Overview
 
 The Fractal Visualizer project is built with a combination of technologies, including Vert.x for the server-side logic, React for the frontend user interface, and CSS for styling and rendering. The project involves implementing various algorithms for fractal generation, connecting the math calculations to the frontend, and providing a visually appealing user interface for interacting with and exploring fractals.
@@ -44,7 +47,7 @@ We welcome contributions from the community to help improve the Fractal Visualiz
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE.md).
+This project is licensed under the [MIT License].
 
 ## Acknowledgements
 
