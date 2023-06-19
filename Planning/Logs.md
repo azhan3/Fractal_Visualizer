@@ -97,4 +97,9 @@
   >- improving pre-existing algorithms to be more specifc representation of java code 
 
 >- **Electron App**
-  >- Finished connecting our server and electron app with react 
+  >- Finished connecting our server and electron app with react
+  >- Finsihed run.bat file, warning concerning running the program and file found in ReadMe
+
+## June 19
+>- **Algorithms**
+  >- Continued modelling algorithms for both backend(java) and some algorithms for the frontend part of the application(javascript/react)
