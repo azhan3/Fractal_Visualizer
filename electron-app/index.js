@@ -1,16 +1,6 @@
 const { app, BrowserWindow } = require('electron');
-const { join } = require('path');
-const { exec } = require('child_process');
-const fs = require('fs');
 
 let mainWindow;
-const delay = ms => new Promise(res => setTimeout(res, ms));
-
-function execute(command, callback) {
-    exec(command, (error, stdout, stderr) => {
-        callback(stdout);
-    });
-};
 
 const createWindow =  () => {
     mainWindow = new BrowserWindow({
