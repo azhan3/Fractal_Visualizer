@@ -86,3 +86,18 @@
   >- Created UML diagrams to visualize the project's architecture and relationships
   >- Documented class diagrams, sequence diagrams, and component diagrams
   >- Updated and refined the diagrams based on project updates
+
+> ## June 16
+>- **Electron App**
+  >- Created electron app boiler plate and various files necessary to run electron app with react js
+  >- Connected react and electron app to impove ui and connect our server to the electron app port  
+
+>- **Algorithms**
+  >- Updated algorithms to have mroe specific algorithms
+
+> ## June 18
+>- **Algorithms**
+  >- further refining of algorithms
+
+>- **Electron App**
+  >- Finished connecting our server and electron app with react 
