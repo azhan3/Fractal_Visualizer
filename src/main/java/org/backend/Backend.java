@@ -12,13 +12,11 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import org.backend.math.AlgorithmGeneralCase;
 import org.backend.math.MathEquations;
 import org.backend.math.PAddicRepresenter;
 import org.backend.util.JSONAppender;
 import org.backend.util.PointList;
-
 import java.util.List;
 
 public class Backend extends AbstractVerticle {
