@@ -94,12 +94,14 @@
 
 ## June 18
 >- **Algorithms**
-  >- improving pre-existing algorithms to be more specifc representation of java code 
+  >- Improving pre-existing algorithm planning to be more specifc representation of java code
+  >- Working on "planning" part of the structure for general algorithms for backend
 
 >- **Electron App**
   >- Finished connecting our server and electron app with react
-  >- Finsihed run.bat file, warning concerning running the program and file found in ReadMe
+  >- Finsihed windows .bat file, warning concerning running the program and file found in ReadMe
 
 ## June 19
 >- **Algorithms**
   >- Continued modelling algorithms for both backend(java) and some algorithms for the frontend part of the application(javascript/react)
+  >- Working on "planning" part of the structure for general algorithms for backend and some parts of frontend
