@@ -87,6 +87,12 @@
   >- Documented class diagrams, sequence diagrams, and component diagrams
   >- Updated and refined the diagrams based on project updates
 
+## June 6 - June 13
+>- **General Improvements**
+  >- Updated ReadMe file
+  >- Planning of creating an electron app with react
+>  - Working on Algorithm planning and refining current algorithms
+
 ## June 16
 >- **Electron App**
   >- Created electron app boiler plate and various files necessary to run electron app with react js
