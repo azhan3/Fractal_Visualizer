@@ -1,7 +1,8 @@
 const { app, BrowserWindow } = require('electron');
-
+app.commandLine.appendSwitch ('high-dpi-support', 1);
+app.commandLine.appendSwitch ('force-device-scale-factor', 1);
 let mainWindow;
-
+const { globalShortcut } = require('electron');
 const createWindow =  () => {
     mainWindow = new BrowserWindow({
         width: 1600,
@@ -19,45 +20,29 @@ const createWindow =  () => {
         mainWindow = null;
         app.quit();
     });
-
-    mainWindow.webContents.setZoomFactor(1.0);
-
-    mainWindow.webContents
-        .setVisualZoomLevelLimits(1, 5)
-        .then(() =>
-            console.log('Zoom levels have been set between 100% and 500%')
-        )
-        .catch((err) => console.log(err));
-
-    mainWindow.webContents.on('zoom-changed', (event, zoomDirection) => {
-        console.log(zoomDirection);
-        const currentZoom = mainWindow.webContents.getZoomFactor();
-        console.log('Current Zoom Factor - ', currentZoom);
-        console.log('Current Zoom Level at - ', mainWindow.webContents.zoomLevel);
-
-        if (zoomDirection === 'in') {
-            mainWindow.webContents.zoomFactor = currentZoom + 0.2;
-            console.log(
-                'Zoom Factor Increased to - ',
-                mainWindow.webContents.zoomFactor * 100,
-                '%'
-            );
-        }
-        if (zoomDirection === 'out') {
-            mainWindow.webContents.zoomFactor =
-                currentZoom - 0.2 <= 0 ? currentZoom : currentZoom - 0.2;
-            console.log(
-                'Zoom Factor Decreased to - ',
-                mainWindow.webContents.zoomFactor * 100,
-                '%'
-            );
-        }
-    });
 }
-
-app.on('ready', () => {
+    app.on('ready', () => {
     createWindow();
+
+    globalShortcut.register('CommandOrControl+=', () => {
+        // Zoom in
+        const currentZoom = mainWindow.webContents.getZoomFactor();
+        mainWindow.webContents.zoomFactor = currentZoom + 0.2;
+    });
+
+    globalShortcut.register('CommandOrControl+-', () => {
+        // Zoom out
+        const currentZoom = mainWindow.webContents.getZoomFactor();
+        mainWindow.webContents.zoomFactor =
+            currentZoom - 0.2 <= 0 ? currentZoom : currentZoom - 0.2;
+    });
 });
+
+app.on('will-quit', () => {
+    // Unregister all shortcuts.
+    globalShortcut.unregisterAll();
+});
+
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

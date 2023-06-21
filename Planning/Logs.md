@@ -87,6 +87,10 @@
   >- Documented class diagrams, sequence diagrams, and component diagrams
   >- Updated and refined the diagrams based on project updates
 
+## June 7
+>- Added CSS styling for buttons
+>- Added CSS styling for input boxes
+
 ## June 16
 >- **Electron App**
   >- Created electron app boiler plate and various files necessary to run electron app with react js
