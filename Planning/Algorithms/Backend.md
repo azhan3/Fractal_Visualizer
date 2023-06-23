@@ -44,3 +44,78 @@ org.backend.Backend Verticle Pseudocode:
         36. If the request fails:
             37. Print the error message.
 
+
+Actual Pseudocode:
+class Backend extends AbstractVerticle {
+    private final Gson gson = new Gson();
+
+    method start(startPromise: Promise<Void>):
+        router = createRouter()
+        httpServer = createHttpServer(router)
+        httpServer.listen(8888, handleHttpServerResult(startPromise))
+
+    method createRouter() -> Router:
+        router = Router.router(vertx)
+        router.route(HttpMethod.POST, "/send-data").handler(handlePostData)
+        return router
+
+    method createHttpServer(router: Router) -> HttpServer:
+        return vertx.createHttpServer().requestHandler(router)
+
+    method handleHttpServerResult(startPromise: Promise<Void>) -> handler:
+        return lambda http:
+            if http.succeeded():
+                startPromise.complete()
+                print("HTTP server started on port 8888")
+            else:
+                startPromise.fail(http.cause())
+
+    method handlePostData(routingContext: RoutingContext):
+        response = routingContext.response()
+        request = routingContext.request()
+        request.bodyHandler(bodyHandler -> {
+            body = bodyHandler.toString()
+            if (body != null && !body.isEmpty()):
+                print("Received data: " + body)
+                data = gson.fromJson(body, JsonObject.class)
+                n = data.get("nValue").getAsInt()
+                p = data.get("pValue").getAsInt()
+                algo = data.get("Algorithm").getAsInt()
+                l = data.get("lValue").getAsFloat()
+                zoom = data.get("zoom").getAsFloat()
+                useRecommendedL = data.get("RecommendL").getAsBoolean()
+                primeRaces = data.get("PrimeRaces").getAsJsonObject()
+                l = useRecommendedL ? (float) MathEquations.scaleFactor((algo == 1 ? p : p-1)) : l
+                n *= zoom
+                pl = computePoints(algo, p, l, n, primeRaces)
+                response.putHeader("Content-Type", "text/plain")
+                        .end(pl.toJsonString())
+            else:
+                print("Request body is null or empty")
+                response.setStatusCode(400)
+                        .end()
+
+    method computePoints(algo: int, p: int, l: float, n: int, primeRaces: JsonObject) -> PointList:
+        if algo == 1:
+            newPoints = PAddicRepresenter(p, l, 30)
+        else:
+            newPoints = AlgorithmGeneralCase(p, l, 30)
+        pl = newPoints.transformSample(n, primeRaces)
+        return pl.get(0)
+
+    method send(pointList: JSONAppender):
+        client = WebClient.create(vertx)
+        url = "http://localhost:31415/data"
+        jsonPayload = pointList.getJSONString()
+        client.postAbs(url)
+                .sendBuffer(Buffer.buffer(jsonPayload), handleSendResult)
+
+    method handleSendResult(ar: AsyncResult<HttpResponse<Buffer>>):
+        if ar.succeeded():
+            response = ar.result()
+            print("Status Code: " + response.statusCode())
+            print("Response Body: " + response.bodyAsString())
+        else:
+            print("Request failed: " + ar.cause().getMessage())
+
+
