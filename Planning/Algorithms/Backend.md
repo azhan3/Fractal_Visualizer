@@ -47,8 +47,8 @@ org.backend.Backend Verticle Pseudocode:
 
 Actual Pseudocode:
 
-class Backend extends AbstractVerticle {
-    private final Gson gson = new Gson();
+    class Backend extends AbstractVerticle {
+        private final Gson gson = new Gson();
 
     method start(startPromise: Promise<Void>):
         router = createRouter()
