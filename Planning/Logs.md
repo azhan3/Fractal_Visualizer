@@ -95,7 +95,7 @@
 
 ## June 16
 >- **Electron App**
-  >- Created electron app boiler plate and various files necessary to run electron app with react js
+  >- Created electron app boilerplate and various files necessary to run electron app with react js
   >- Connected react and electron app to impove ui and connect our server to the electron app port  
 
 ## June 18
