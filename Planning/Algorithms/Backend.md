@@ -45,8 +45,8 @@ org.backend.Backend Verticle Pseudocode:
             37. Print the error message.
 
 
-Actual Pseudocode:
-
+# Actual Pseudocode:
+```bash
     class Backend extends AbstractVerticle {
         private final Gson gson = new Gson();
 
@@ -118,5 +118,5 @@ Actual Pseudocode:
             print("Response Body: " + response.bodyAsString())
         else:
             print("Request failed: " + ar.cause().getMessage())
-
+```
 
