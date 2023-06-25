@@ -91,7 +91,7 @@ method handlePostData(routingContext: RoutingContext):
             pl = computePoints(algo, p, l, n, primeRaces)
             response.putHeader("Content-Type", "text/plain")
                     .end(pl.toJsonString())
-        else:
+         else:
             print("Request body is null or empty")
             response.setStatusCode(400)
                     .end()
