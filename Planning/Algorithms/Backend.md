@@ -45,7 +45,7 @@ org.backend.Backend Verticle Pseudocode:
             37. Print the error message.
 
 
-# Actual Pseudocode:
+# General Pseudocode:
 ```bash
 class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
