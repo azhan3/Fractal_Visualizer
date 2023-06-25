@@ -35,7 +35,7 @@ app.on('activate', () => {
 });
 ```
 
-# General Pseudocode
+# General Pseudocode:
 ```bash
 import { app, BrowserWindow, globalShortcut } from 'electron';
 
