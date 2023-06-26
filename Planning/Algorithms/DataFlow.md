@@ -21,7 +21,7 @@
 4. Render the data in the React component.
 
 ## Vert.x org.backend.Backend Pseudocode:
-'''bash
+```bash
 function handlePostData(routingContext):
     response = routingContext.response()
     request = routingContext.request()
@@ -104,4 +104,4 @@ function send(pointList: JSONAppender):
                     print "Request failed: " + ar.cause().getMessage()
             })
 end function
-'''
+```
