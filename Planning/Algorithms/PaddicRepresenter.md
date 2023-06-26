@@ -23,69 +23,70 @@ PAddicExpansion Calculation Pseudocode:
 
 18. Return the primary PointList.
 
-Actual Pseudocode:
+# General Pseudocode:
+```bash
+class PAddicRepresenter:
+    private int p
+    private double l
+    private int outputLength
 
-    class PAddicRepresenter:
-        private int p
-        private double l
-        private int outputLength
+constructor PAddicRepresenter(p: int, l: double, outputLength: int):
+    this.p = p
+    this.l = l
+    this.outputLength = outputLength
 
-    constructor PAddicRepresenter(p: int, l: double, outputLength: int):
-        this.p = p
-        this.l = l
-        this.outputLength = outputLength
+method toPlane(n: int) -> double[]:
+    l = this.l
+    p = this.p
+    decomposedInt = completedIntToBase(n)
+    real = 0.0
+    imag = 0.0
+    for i in range(decomposedInt.size()):
+        c = decomposedInt[i]
+        power = l^i
+        angle = c * 2 * pi / p
 
-    method toPlane(n: int) -> double[]:
-        l = this.l
-        p = this.p
-        decomposedInt = completedIntToBase(n)
-        real = 0.0
-        imag = 0.0
-        for i in range(decomposedInt.size()):
-            c = decomposedInt[i]
-            power = l^i
-            angle = c * 2 * pi / p
+        real += power * cos(angle)
+        imag += power * sin(angle)
 
-            real += power * cos(angle)
-            imag += power * sin(angle)
+    return [real, imag]
 
-        return [real, imag]
+method transformSample(ns: int, primeRaces: JsonObject) -> List<PointList>:
+    secondaryPointList = PointList()
+    primes = primeRaces.get("primes").getAsJsonArray()
+    remainders = primeRaces.get("remainders").getAsJsonArray()
+    num = primes.size()
 
-    method transformSample(ns: int, primeRaces: JsonObject) -> List<PointList>:
-        secondaryPointList = PointList()
-        primes = primeRaces.get("primes").getAsJsonArray()
-        remainders = primeRaces.get("remainders").getAsJsonArray()
-        num = primes.size()
+    pointList = List<PointList>(num + 1)
+    for i in range(num + 1):
+        pointList[i] = PointList()
 
-        pointList = List<PointList>(num + 1)
-        for i in range(num + 1):
-            pointList[i] = PointList()
+    for n in range(ns + 1):
+        planeCoords = toPlane(n)
+        x = planeCoords[0]
+        y = planeCoords[1]
 
-        for n in range(ns + 1):
-            planeCoords = toPlane(n)
-            x = planeCoords[0]
-            y = planeCoords[1]
+        pointList[0].addPoint(x, y)
 
-            pointList[0].addPoint(x, y)
+        for j in range(num):
+            if n % primes[j].getAsInt() == remainders[j].getAsInt():
+                pointList[j + 1].addPoint(x, y)
 
-            for j in range(num):
-                if n % primes[j].getAsInt() == remainders[j].getAsInt():
-                    pointList[j + 1].addPoint(x, y)
+    return pointList
 
-        return pointList
+private method intToBase(n: int) -> List<Integer>:
+    p = this.p
+    decomposition = List<Integer>()
+    while n > 0:
+        residual = n % p
+        n = (n - residual) / p
+        decomposition.add(residual)
+    return decomposition
 
-    private method intToBase(n: int) -> List<Integer>:
-        p = this.p
-        decomposition = List<Integer>()
-        while n > 0:
-            residual = n % p
-            n = (n - residual) / p
-            decomposition.add(residual)
-        return decomposition
-
-    private method completedIntToBase(n: int) -> List<Integer>:
-        decomposedInt = intToBase(n)
-        lengthDiff = outputLength - decomposedInt.size()
-        for i in range(lengthDiff):
-            decomposedInt.add(0)
-        return decomposedInt
+private method completedIntToBase(n: int) -> List<Integer>:
+    decomposedInt = intToBase(n)
+    lengthDiff = outputLength - decomposedInt.size()
+    for i in range(lengthDiff):
+        decomposedInt.add(0)
+    return decomposedInt
+```
