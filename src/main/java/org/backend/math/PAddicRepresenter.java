@@ -18,11 +18,12 @@ public class PAddicRepresenter {
         this.outputLength = outputLength;
     }
 
+    // Convert an integer to plane coordinates
     public double[] toPlane(int n) {
         double l = this.l;
         int p = this.p;
         List<Integer> decomposedInt = completedIntToBase(n);
-        //System.out.println(decomposedInt);
+
         double real = 0.0;
         double imag = 0.0;
         for (int i = 0; i < decomposedInt.size(); i++) {
@@ -37,16 +38,21 @@ public class PAddicRepresenter {
         return new double[]{real, imag};
     }
 
+    // Transform a sample based on prime races
     public List<PointList> transformSample(Integer ns, JsonObject primeRaces) {
         PointList secondaryPointList = new PointList();
         JsonArray primes = primeRaces.get("primes").getAsJsonArray();
         JsonArray remainders = primeRaces.get("remainders").getAsJsonArray();
         int num = primes.size();
 
-        List<PointList>pointList = new ArrayList<PointList>(num+1);
-        for (int i = 0 ; i <= num ; ++i) {
+        List<PointList> pointList = new ArrayList<PointList>(num + 1);
+
+        // Initialize each PointList in the list
+        for (int i = 0; i <= num; ++i) {
             pointList.add(new PointList());
         }
+
+        // Iterate over each integer from 0 to ns
         for (int n = 0; n <= ns; ++n) {
             double[] planeCoords = toPlane(n);
             double x = planeCoords[0];
@@ -55,19 +61,19 @@ public class PAddicRepresenter {
             // Add points to the primary PointList
             pointList.get(0).addPoint(x, y);
 
-            for (int j = 0; j < num ; ++j) {
+            // Check if the integer satisfies the prime remainder conditions
+            for (int j = 0; j < num; ++j) {
                 if (n % primes.get(j).getAsInt() == remainders.get(j).getAsInt()) {
-                    pointList.get(j+1).addPoint(x, y);
+                    // Add points to the corresponding PointList
+                    pointList.get(j + 1).addPoint(x, y);
                 }
             }
         }
 
-
         return pointList;
     }
 
-
-
+    // Convert an integer to its base-p representation
     private List<Integer> intToBase(int n) {
         int p = this.p;
         List<Integer> decomposition = new ArrayList<>();
@@ -79,9 +85,9 @@ public class PAddicRepresenter {
         return decomposition;
     }
 
+    // Convert an integer to its completed base-p representation
     private List<Integer> completedIntToBase(int n) {
         List<Integer> decomposedInt = intToBase(n);
-        //System.out.println(n + " " + decomposedInt);
         int lengthDiff = outputLength - decomposedInt.size();
         for (int i = 0; i < lengthDiff; i++) {
             decomposedInt.add(0);

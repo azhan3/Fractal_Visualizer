@@ -87,13 +87,18 @@
   >- Documented class diagrams, sequence diagrams, and component diagrams
   >- Updated and refined the diagrams based on project updates
 
-## June 6 - June 13
+## June 6 - June 9
 >- **General Improvements**
   >- Updated ReadMe file
   >- Planning of creating an electron app with react
 >  - Working on Algorithm planning and refining current algorithms
 
-## June 16
+## June 10 - June 14
+>- **Solely work on React UI components**
+>- Added sidebar, buttons, inputs
+>- Overall: huge progress on User-friendly GUI
+
+## June 15 - June 16
 >- **Electron App**
   >- Created electron app boilerplate and various files necessary to run electron app with react js
   >- Connected react and electron app to impove ui and connect our server to the electron app port  
@@ -111,3 +116,15 @@
 >- **Algorithms**
   >- Continued modelling algorithms for both backend(java) and some algorithms for the frontend part of the application(javascript/react)
   >- Working on "planning" part of the structure for general algorithms for backend and some parts of frontend
+
+## June 21
+>- **Packaged app into Windows Batch file for easier time running**
+>- Set up React.js app Production build for optimization
+>- Set up Java packaging into JAR file for optimization
+
+## June 22-25
+>- **Wrap up project and conclusion**
+>- Create Slideshow and technical video
+>- Zoom Label
+>- Reset Canvas position button
+>- Last minute UI and QOL changes

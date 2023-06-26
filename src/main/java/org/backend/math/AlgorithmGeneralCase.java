@@ -7,6 +7,7 @@ public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
         super(p, l, outputLength);
     }
 
+    // Convert an integer to plane coordinates
     @Override
     public double[] toPlane(int n) {
         int p = this.p;
@@ -28,6 +29,7 @@ public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
             if (c == 0) {
                 real += 0.0;  // Center point
             } else {
+                // Calculate angle and power based on the prime base and level
                 double angle = Math.toRadians((c - 1) * 360.0 / (p - 1));
                 double power = Math.pow(l, k);
                 double x = Math.cos(angle) * power;

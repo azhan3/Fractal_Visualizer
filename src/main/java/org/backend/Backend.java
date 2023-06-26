@@ -29,6 +29,7 @@ public class Backend extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route(HttpMethod.POST, "/send-data").handler(this::handlePostData);
 
+        // Create an HTTP server and configure the router
         vertx.createHttpServer(serverOptions)
                 .requestHandler(router)
                 .listen(8888, http -> {
@@ -45,6 +46,7 @@ public class Backend extends AbstractVerticle {
         HttpServerResponse response = routingContext.response();
         HttpServerRequest request = routingContext.request();
 
+        // Handle the request body
         request.bodyHandler(bodyHandler -> {
             String body = bodyHandler.toString();
 
@@ -52,9 +54,9 @@ public class Backend extends AbstractVerticle {
                 // Process the received data
                 System.out.println("Received data: " + body);
 
-                // Create Gson instance
+                // Create a Gson instance
 
-                // Convert JSON string to JsonObject
+                // Convert the JSON string to a JsonObject
                 JsonObject data = gson.fromJson(body, JsonObject.class);
 
                 // Process the data and perform any necessary operations here
@@ -66,6 +68,7 @@ public class Backend extends AbstractVerticle {
                 boolean useRecommendedL = data.get("RecommendL").getAsBoolean();
                 JsonObject primeRaces = data.get("PrimeRaces").getAsJsonObject(); // Retrieve as JsonObject instead of JsonArray
 
+                // Adjust the value of 'l' based on the algorithm and 'useRecommendedL'
                 l = useRecommendedL ? (float) MathEquations.scaleFactor((algo == 1 ? p : p-1)) : l;
                 n *= zoom;
                 List<PointList> pl;
@@ -111,12 +114,14 @@ public class Backend extends AbstractVerticle {
         });
     }
 
+    // Send the point list as JSON to a specified URL
     public void send(JSONAppender pointList) {
         WebClient client = WebClient.create(vertx);
         String url = "http://localhost:31415/data";
 
         String jsonPayload = pointList.getJSONString();
 
+        // Send a POST request with the JSON payload to the specified URL
         client.postAbs(url)
                 .sendBuffer(Buffer.buffer(jsonPayload), ar -> {
                     if (ar.succeeded()) {
