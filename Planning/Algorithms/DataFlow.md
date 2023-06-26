@@ -127,3 +127,85 @@ end function
 
 startServerScript()
 ```
+
+# Handling the given data 
+```bash
+
+function getRequest(req, res):
+    parse the request URL
+    initialize name variable with 'World' (default value)
+    if query parameter 'data' exists in reqUrl:
+        assign its value to name
+
+    create response object with 'points' property as data
+
+    set response status code to 200
+    set response headers for Content-Type and Access-Control-Allow-Origin
+    end the response by sending JSON.stringify(response)
+
+end function
+
+function postView(req, res):
+    initialize body variable as an empty string
+
+    handle 'data' event on the request:
+        append received data chunks to the body variable
+
+    handle 'end' event on the request:
+        parse the received body as viewData JSON
+        assign viewData.points to data variable
+
+        create response object with 'text' property as 'received new viewport settings'
+
+        set response status code to 200
+        set response headers for Content-Type and Access-Control-Allow-Origin
+        end the response by sending JSON.stringify(response)
+
+end function
+
+function postRequest(req, res):
+    initialize body variable as an empty string
+
+    handle 'data' event on the request:
+        append received data chunks to the body variable
+
+    handle 'end' event on the request:
+        parse the received body as postBody JSON
+
+        send a POST request to 'http://localhost:8888' with postBody as payload using axios module:
+            handle successful response:
+                process the response if needed
+
+                create responseData object with 'text' property as 'received [length] points'
+
+                set response status code to 200
+                set response headers for Content-Type and Access-Control-Allow-Origin
+                end the response by sending JSON.stringify(responseData)
+
+            handle error response:
+                handle the error if needed
+
+                create errorResponse object with 'text' property as 'ERROR'
+
+                set response status code to 500
+                set response headers for Content-Type and Access-Control-Allow-Origin
+                end the response by sending JSON.stringify(errorResponse)
+
+    handle JSON parsing error:
+        create errorResponse object with 'text' property as 'ERROR'
+
+        set response status code to 400
+        set response headers for Content-Type and Access-Control-Allow-Origin
+        end the response by sending JSON.stringify(errorResponse)
+
+end function
+
+function invalidRequest(req, res):
+    set response status code to 404
+    set response headers for Content-Type and Access-Control-Allow-Origin
+    end the response by sending 'Invalid Request'
+
+end function
+
+export getRequest, postView, postRequest, and invalidRequest functions
+```
