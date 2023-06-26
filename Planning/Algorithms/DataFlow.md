@@ -128,7 +128,7 @@ end function
 startServerScript()
 ```
 
-# Node.js server-script Pseudocode:
+## Node.js server-script Pseudocode:
 ```bash
 
 function getRequest(req, res):
@@ -210,7 +210,7 @@ end function
 export getRequest, postView, postRequest, and invalidRequest functions
 ```
 
-# React Front-End Pseudocode:
+## React Front-End Pseudocode:
 ```bash
 declare loading variable
 declare primesArray variable
