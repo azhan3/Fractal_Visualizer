@@ -209,3 +209,133 @@ end function
 
 export getRequest, postView, postRequest, and invalidRequest functions
 ```
+
+# React Front-End Pseudocode:
+```bash
+declare loading variable
+declare primesArray variable
+declare remaindersArray variable
+declare requestData object
+declare requestOptions object
+
+function handleSend():
+    set loading to true
+
+    parse primes and remainders input and assign them to primesArray and remaindersArray respectively
+
+    populate requestData object with required data
+
+    populate requestOptions object with method, headers, and body
+
+    send a POST request to "http://localhost:31415/view" with requestOptions:
+        handle response:
+            process the response data if needed
+            update state variables with the received data
+            set loading to false
+
+        handle error:
+            log the error to the console
+            set loading to false
+
+end function
+
+function renderPoints():
+
+end function
+
+function handleNValueChange(event):
+    set nValue to event.target.value
+
+end function
+
+function handlePValueChange(event):
+    set pValue to event.target.value
+
+end function
+
+function handleLValueChange(event):
+    set lValue to event.target.value
+
+end function
+
+function handlePrimesChange(event):
+    set primes to event.target.value
+
+end function
+
+function handleRemaindersChange(event):
+    set remainders to event.target.value
+
+end function
+
+function scalePointsToFitCanvas(pointsData, minX, minY, maxX, maxY, canvasWidth, canvasHeight):
+    initialize an empty array scaledPoints
+
+    calculate scaledCanvasWidth and scaledCanvasHeight based on zoom
+
+    calculate scaleX and scaleY based on scaledCanvasWidth, scaledCanvasHeight, and data range
+
+    iterate over each point in pointsData:
+        scale the x and y coordinates based on minX, minY, scaleX, and scaleY
+        add the scaled point to scaledPoints
+
+    return scaledPoints
+
+end function
+
+function handleClearCanvas(event):
+    clear the coordinates array
+    clear the primeRacesPTS array
+
+end function
+
+function handleVisualize():
+    if pointsData is empty, return
+
+    calculate scaled coordinates for pointsData using scalePointsToFitCanvas
+    update coordinates with the scaled coordinates
+
+    initialize an empty array PrimePts
+
+    iterate over each key in primeRacesData:
+        retrieve coordinates for the key
+        calculate scaled coordinates for the coordinates using scalePointsToFitCanvas
+        add the scaled coordinates to PrimePts
+
+    update PrimeRacesPTS with PrimePts
+
+    calculate canvasWidth and canvasHeight based on window dimensions and zoom level
+
+end function
+
+function handleSizeChange(event):
+    retrieve the value from event.target.value and assign it to value
+
+    update dotSize with value if it's not an empty string
+    update sizePlaceholder with value
+
+end function
+
+declare state variables:
+    coordinates
+    setCoordinates
+    canvasRef
+    canvasWidth
+    setCanvasWidth
+    canvasHeight
+    setCanvasHeight
+    dotSize
+    setDotSize
+    PrimeRacesPTS
+    setPrimeRacesPTS
+    PrimeRacesToggles
+    setPrimeRacesToggles
+    fractalDots
+    setFractalDots
+    primeRaces
+    setPrimeRaces
+    selectedColor
+    setSelectedColor
+
+initialize state variables using useCanvas with window dimensions
+```
