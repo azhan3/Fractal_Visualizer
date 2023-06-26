@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
@@ -21,13 +22,14 @@ import java.util.List;
 
 public class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
+    HttpServerOptions serverOptions = new HttpServerOptions().setIdleTimeout(0);
 
     @Override
     public void start(Promise<Void> startPromise) {
         Router router = Router.router(vertx);
         router.route(HttpMethod.POST, "/send-data").handler(this::handlePostData);
 
-        vertx.createHttpServer()
+        vertx.createHttpServer(serverOptions)
                 .requestHandler(router)
                 .listen(8888, http -> {
                     if (http.succeeded()) {
@@ -96,6 +98,7 @@ public class Backend extends AbstractVerticle {
                 for (int i = 1 ; i < pl.size() ; ++i) {
                     PrimeRaces.addAppender(Integer.toString(i), pl.get(i).toJsonAppender());
                 }
+                System.out.println(pl.get(0).size());
 
                 parentAppender.addAppender("PrimeRaces", PrimeRaces);
                 response.putHeader("Content-Type", "text/plain")
@@ -107,8 +110,6 @@ public class Backend extends AbstractVerticle {
             }
         });
     }
-
-
 
     public void send(JSONAppender pointList) {
         WebClient client = WebClient.create(vertx);

@@ -21,6 +21,7 @@ const App = () => {
   const [lValue, setLValue] = useState(0.5);
   const [useRecommendedScaleFactor, setUseRecommendedScaleFactor] =
       useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const [minimum, setMin] = useState([]);
   const [maximum, setMax] = useState([]);
@@ -89,6 +90,7 @@ const App = () => {
 
           setMax(data.data.max.points[0]);
           setMin(data.data.min.points[0]);
+          handleClearCanvas()
           setLoading(false); // Hide the loading animation
           return data; // Pass data to the next .then()
         })
@@ -244,6 +246,14 @@ const App = () => {
     setDropdownOpen(false); // Close the dropdown menu
   };
 
+  const handleDrag = (e, draggableData) => {
+    const { x, y } = draggableData;
+    setPosition({ x, y });
+  };
+  const handleReset = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
   const colors = [
     "#FF4136",
     "#FF851B",
@@ -382,8 +392,8 @@ const App = () => {
           </div>
 
           <div className="button">
-            <div className="button-wrapper" onClick={handleClearCanvas}>
-              <div className="text">Clear</div>
+            <div className="button-wrapper" onClick={handleReset}>
+              <div className="text">Reset Canvas</div>
               <span className="icon">
               <svg
                   viewBox="0 0 24 24"
@@ -602,6 +612,8 @@ const App = () => {
               Remainders
             </label>
           </div>
+          <span>Zoom Level: {zoom}</span>
+
         </div>
         <div className="sidebar-toggle" onClick={toggleSidebar}>
           <svg className="icon" viewBox="0 0 24 24" fill="#000000">
@@ -621,6 +633,8 @@ const App = () => {
                 />
             )}
           </svg>
+
+
         </div>
 
         <div className="main">
@@ -660,13 +674,15 @@ const App = () => {
                   </div>
               ) : (
                   // Render the existing content if loading is false
-                  <Draggable>
-                    <canvas
+                  <Draggable onDrag={handleDrag} position={position}>
+
+                  <canvas
                         className="App-canvas"
                         ref={canvasRef}
                         width={canvasWidth}
                         height={canvasHeight}
                     />
+
                   </Draggable>
               )}
             </div>
