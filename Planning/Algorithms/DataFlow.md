@@ -105,3 +105,25 @@ function send(pointList: JSONAppender):
             })
 end function
 ```
+
+## Node.js server and server script pseudocode
+```bash
+function startServerScript():
+    child = spawn('node', ['./src/Server/server-script.js'])
+
+    child.stdout.on('data', (data) => {
+        print "Server output: " + data
+    })
+
+    child.stderr.on('data', (data) => {
+        print "Server error: " + data
+    })
+
+    child.on('close', (code) => {
+        print "Server process exited with code " + code
+    })
+
+end function
+
+startServerScript()
+```
