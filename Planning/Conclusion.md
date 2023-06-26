@@ -9,6 +9,7 @@ The program allows users to specify a prime number `p` and generates a fractal r
 - Visual representation of fractals in Zp space for a given prime number `p`.
 - Ability to specify the form of numbers to be represented, such as congruence modulo a specified value.
 - Comparisons between different forms of numbers, allowing users to differentiate between multiple conditions.
+- Distinct Visualization of Prime Races 
 
 ### Technologies Used:
 - Java: The core programming language used for implementing the fractal generation algorithm.
