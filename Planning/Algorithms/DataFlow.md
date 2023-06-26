@@ -106,7 +106,7 @@ function send(pointList: JSONAppender):
 end function
 ```
 
-## Node.js server and server script pseudocode
+## Node.js server Pseudocode:
 ```bash
 function startServerScript():
     child = spawn('node', ['./src/Server/server-script.js'])
@@ -128,7 +128,7 @@ end function
 startServerScript()
 ```
 
-# Processing given data if necessary
+# Node.js server-script Pseudocode:
 ```bash
 
 function getRequest(req, res):
