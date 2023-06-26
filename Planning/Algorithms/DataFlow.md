@@ -128,7 +128,7 @@ end function
 startServerScript()
 ```
 
-# Handling the given data 
+# Processing given data if necessary
 ```bash
 
 function getRequest(req, res):
