@@ -315,27 +315,4 @@ function handleSizeChange(event):
     update sizePlaceholder with value
 
 end function
-
-declare state variables:
-    coordinates
-    setCoordinates
-    canvasRef
-    canvasWidth
-    setCanvasWidth
-    canvasHeight
-    setCanvasHeight
-    dotSize
-    setDotSize
-    PrimeRacesPTS
-    setPrimeRacesPTS
-    PrimeRacesToggles
-    setPrimeRacesToggles
-    fractalDots
-    setFractalDots
-    primeRaces
-    setPrimeRaces
-    selectedColor
-    setSelectedColor
-
-initialize state variables using useCanvas with window dimensions
 ```
