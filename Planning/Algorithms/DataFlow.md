@@ -20,7 +20,7 @@
 3. Parse the JSON data.
 4. Render the data in the React component.
 
-## Vert.x org.backend.Backend Pseudocode:
+## Vert.x org.backend.Backend pseudocode:
 ```bash
 function handlePostData(routingContext):
     response = routingContext.response()
