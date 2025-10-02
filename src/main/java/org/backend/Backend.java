@@ -27,6 +27,19 @@ public class Backend extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
         Router router = Router.router(vertx);
+        // Basic CORS handling: respond to preflight and add CORS headers
+        router.route().handler(ctx -> {
+            ctx.response().putHeader("Access-Control-Allow-Origin", "http://localhost:5500");
+            ctx.response().putHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+            ctx.response().putHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+            // If it's an OPTIONS preflight request, end here
+            if ("OPTIONS".equalsIgnoreCase(ctx.request().method().name())) {
+                ctx.response().setStatusCode(204).end();
+            } else {
+                ctx.next();
+            }
+        });
+
         router.route(HttpMethod.POST, "/send-data").handler(this::handlePostData);
 
         // Create an HTTP server and configure the router

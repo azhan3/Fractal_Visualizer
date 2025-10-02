@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'org.example'
@@ -39,4 +40,10 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+}
+
+// Configure the application plugin so `gradlew run` will start the server
+application {
+    // Gradle 8+ uses mainClass in this form
+    mainClass.set('org.backend.main')
 }

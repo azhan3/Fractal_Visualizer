@@ -28,6 +28,7 @@ const App = () => {
 
   const svgRef = useRef(null);
   const visualizeButtonRef = useRef(null);
+  const floatingRef = useRef(null);
   const [collapsed, setCollapsed] = useState(false);
 
   const [primes, setPrimes] = useState("3");
@@ -77,20 +78,28 @@ const App = () => {
       body: JSON.stringify(requestData),
     };
 
-    fetch("http://localhost:31415/view", requestOptions)
+    fetch("http://localhost:8888/send-data", requestOptions)
         .then((response) => response.json())
         .then((data) => {
-          // Process the response data if needed
-          setPointsData(data.data.points);
-          setPrimeRacesData(data.data.PrimeRaces);
-          let n = Object.keys(data.data.PrimeRaces).length;
+          // Backend returns a top-level object where `points` is itself an object
+          // with a `points` array (due to how JSONAppender nests the data).
+          // Normalize to store the inner array directly so the canvas renderer
+          // can iterate over it.
+          const primaryPoints = (data.points && data.points.points) ? data.points.points : [];
+          setPointsData(primaryPoints);
+          setPrimeRacesData(data.PrimeRaces || {});
+          const n = data.PrimeRaces ? Object.keys(data.PrimeRaces).length : 0;
 
           setPrimeRacesToggles(Array(n).fill(false));
           setSelectedColor(Array(n).fill("#FF4136"));
 
-          setMax(data.data.max.points[0]);
-          setMin(data.data.min.points[0]);
-          handleClearCanvas()
+          if (data.max && data.max.points && data.max.points[0]) {
+            setMax(data.max.points[0]);
+          }
+          if (data.min && data.min.points && data.min.points[0]) {
+            setMin(data.min.points[0]);
+          }
+          handleClearCanvas();
           setLoading(false); // Hide the loading animation
           return data; // Pass data to the next .then()
         })
@@ -152,10 +161,11 @@ const App = () => {
     setPrimeRacesPTS([]);
   };
   const handleVisualize = () => {
-    if (pointsData.length === 0) return
+    // pointsData is normalized to be an array of {x,y}
+    if (!pointsData || pointsData.length === 0) return;
     setCoordinates(
         scalePointsToFitCanvas(
-            pointsData["points"],
+            pointsData,
             minimum.x,
             minimum.y,
             maximum.x,
@@ -265,8 +275,8 @@ const App = () => {
 
   return (
       <div className={`container ${collapsed ? "collapsed" : ""}`}>
-        <Draggable handle=".drag-handle">
-          <div className="floating-area">
+        <Draggable handle=".drag-handle" nodeRef={floatingRef}>
+          <div className="floating-area" ref={floatingRef}>
             <div className="prime-races-header">
               <div className="drag-handle">
                 Prime Races
@@ -341,20 +351,20 @@ const App = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
               >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                 <g
                     id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                 ></g>
                 <g id="SVGRepo_iconCarrier">
                   {" "}
                   <path
                       d="M20 20L14.9497 14.9497M14.9497 14.9497C16.2165 13.683 17 11.933 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10M14.9497 14.9497C13.683 16.2165 11.933 17 10 17C8.09269 17 6.36355 16.2372 5.10102 15M7 10H13M10 7V13"
                       stroke="#B78C38"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                   ></path>{" "}
                 </g>
               </svg>
@@ -371,12 +381,12 @@ const App = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
               >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                    id="SVGRepo_tracerCarrier"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                ></g>
+        <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        ></g>
                 <g id="SVGRepo_iconCarrier">
                   <path
                       d="M20 20L14.9497 14.9498M14.9497 14.9498C16.2165 13.683 17 11.933 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10M14.9497 14.9498C13.683 16.2165 11.933 17 10 17C8.09269 17 6.36355 16.2372 5.10102 15M7 10H13"
@@ -646,27 +656,27 @@ const App = () => {
                          xmlns="http://www.w3.org/2000/svg">
                       <defs>
                         <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stop-color="#5ebd3e"/>
-                          <stop offset="33%" stop-color="#ffb900"/>
-                          <stop offset="67%" stop-color="#f78200"/>
-                          <stop offset="100%" stop-color="#e23838"/>
+                          <stop offset="0%" stopColor="#5ebd3e"/>
+                          <stop offset="33%" stopColor="#ffb900"/>
+                          <stop offset="67%" stopColor="#f78200"/>
+                          <stop offset="100%" stopColor="#e23838"/>
                         </linearGradient>
                         <linearGradient id="grad2" x1="1" y1="0" x2="0" y2="0">
-                          <stop offset="0%" stop-color="#e23838"/>
-                          <stop offset="33%" stop-color="#973999"/>
-                          <stop offset="67%" stop-color="#009cdf"/>
-                          <stop offset="100%" stop-color="#5ebd3e"/>
+                          <stop offset="0%" stopColor="#e23838"/>
+                          <stop offset="33%" stopColor="#973999"/>
+                          <stop offset="67%" stopColor="#009cdf"/>
+                          <stop offset="100%" stopColor="#5ebd3e"/>
                         </linearGradient>
                       </defs>
-                      <g fill="none" stroke-linecap="round" stroke-width="16">
+                      <g fill="none" strokeLinecap="round" strokeWidth="16">
                         <g className="ip__track" stroke="#ddd">
                           <path d="M8,64s0-56,60-56,60,112,120,112,60-56,60-56"/>
                           <path d="M248,64s0-56-60-56-60,112-120,112S8,64,8,64"/>
                         </g>
-                        <g stroke-dasharray="180 656">
-                          <path className="ip__worm1" stroke="url(#grad1)" stroke-dashoffset="0"
+                        <g strokeDasharray="180 656">
+                          <path className="ip__worm1" stroke="url(#grad1)" strokeDashoffset="0"
                                 d="M8,64s0-56,60-56,60,112,120,112,60-56,60-56"/>
-                          <path className="ip__worm2" stroke="url(#grad2)" stroke-dashoffset="358"
+                          <path className="ip__worm2" stroke="url(#grad2)" strokeDashoffset="358"
                                 d="M248,64s0-56-60-56-60,112-120,112S8,64,8,64"/>
                         </g>
                       </g>
