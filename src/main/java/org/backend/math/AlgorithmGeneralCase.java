@@ -22,7 +22,7 @@ public class AlgorithmGeneralCase extends AlgorithmBoilerplate {
         double imag = 0.0;
         int k = 0;
 
-        while (n > 0) {
+        while (n > 0 && k < outputLength) {
             int c = n % p;
             n = n / p;
 

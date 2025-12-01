@@ -78,19 +78,20 @@ public class Backend extends AbstractVerticle {
                 int algo = data.get("Algorithm").getAsInt();
                 float l = data.get("lValue").getAsFloat();
                 float zoom = data.get("zoom").getAsFloat();
+                int precision = data.has("precision") ? data.get("precision").getAsInt() : 30;
                 boolean useRecommendedL = data.get("RecommendL").getAsBoolean();
                 JsonObject primeRaces = data.get("PrimeRaces").getAsJsonObject(); // Retrieve as JsonObject instead of JsonArray
 
                 // Adjust the value of 'l' based on the algorithm and 'useRecommendedL'
                 l = useRecommendedL ? (float) MathEquations.scaleFactor((algo == 1 ? p : p-1)) : l;
-                n *= zoom;
+                n = Math.max(0, Math.round(n * zoom));
                 List<PointList> pl;
 
                 if (algo == 1) {
-                    PAddicRepresenter newPoints = new PAddicRepresenter(p, l, 30);
+                    PAddicRepresenter newPoints = new PAddicRepresenter(p, l, precision);
                     pl = newPoints.transformSample(n ,primeRaces);
                 } else {
-                    AlgorithmGeneralCase newPoints2 = new AlgorithmGeneralCase(p, l, 30);
+                    AlgorithmGeneralCase newPoints2 = new AlgorithmGeneralCase(p, l, precision);
                     pl = newPoints2.transformSample(n, primeRaces);
                 }
 
