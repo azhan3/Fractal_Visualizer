@@ -9,8 +9,10 @@ in vec2 a_position;
 uniform float u_zoom;
 uniform vec2 u_pan;
 uniform float u_pointSize;
+uniform float u_aspect;
 void main() {
-  vec2 position = a_position * u_zoom + u_pan;
+  vec2 scaled = vec2(a_position.x * u_aspect, a_position.y);
+  vec2 position = scaled * u_zoom + u_pan;
   gl_Position = vec4(position, 0.0, 1.0);
   gl_PointSize = max(1.0, u_pointSize);
 }
@@ -177,6 +179,7 @@ const WebGLViewport = ({
       zoom: gl.getUniformLocation(program, "u_zoom"),
       pan: gl.getUniformLocation(program, "u_pan"),
       pointSize: gl.getUniformLocation(program, "u_pointSize"),
+      aspect: gl.getUniformLocation(program, "u_aspect"),
       color: gl.getUniformLocation(program, "u_color"),
       shape: gl.getUniformLocation(program, "u_shape"),
     };
@@ -204,6 +207,13 @@ const WebGLViewport = ({
 
       const currentView = viewStateRef.current;
       glInstance.useProgram(program);
+      let aspect = 1.0;
+      if (canvas.width > 0 && canvas.height > 0) {
+        aspect = canvas.height / canvas.width;
+      }
+      if (uniformsInstance.aspect) {
+        glInstance.uniform1f(uniformsInstance.aspect, aspect);
+      }
       glInstance.uniform1f(uniformsInstance.zoom, currentView.zoom);
       glInstance.uniform2f(uniformsInstance.pan, currentView.panX, currentView.panY);
       glInstance.uniform1f(uniformsInstance.pointSize, pointSizeRef.current * dpr);
