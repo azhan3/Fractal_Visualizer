@@ -3,6 +3,7 @@ package org.backend.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.List;
 
 public class JSONAppender {
     private JsonObject jsonObject;
@@ -29,6 +30,31 @@ public class JSONAppender {
         JsonArray jsonArray = new JsonArray();
         for (Object value : values) {
             jsonArray.add(gson.toJsonTree(value));
+        }
+        jsonObject.add(key, jsonArray);
+    }
+
+    public void addNumberArray(String key, List<? extends Number> values) {
+        JsonArray jsonArray = new JsonArray();
+        for (Number value : values) {
+            jsonArray.add(value);
+        }
+        jsonObject.add(key, jsonArray);
+    }
+
+    public void addNumberArray(String key, double[] values) {
+        JsonArray jsonArray = new JsonArray();
+        for (double value : values) {
+            jsonArray.add(value);
+        }
+        jsonObject.add(key, jsonArray);
+    }
+
+    public void addNumberArray(String key, double[] values, int length) {
+        JsonArray jsonArray = new JsonArray();
+        int limit = Math.min(length, values.length);
+        for (int i = 0; i < limit; i++) {
+            jsonArray.add(values[i]);
         }
         jsonObject.add(key, jsonArray);
     }

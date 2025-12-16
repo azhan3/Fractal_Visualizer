@@ -101,6 +101,83 @@ const normalizePoints = (points, bounds, precision) => {
   return buffer;
 };
 
+const buildBoundsFromArrays = (minArray, maxArray, xArray, yArray) => {
+  let minX = Number(minArray?.[0]);
+  let minY = Number(minArray?.[1]);
+  let maxX = Number(maxArray?.[0]);
+  let maxY = Number(maxArray?.[1]);
+
+  const hasBounds =
+    Number.isFinite(minX) &&
+    Number.isFinite(minY) &&
+    Number.isFinite(maxX) &&
+    Number.isFinite(maxY);
+
+  const safeX = Array.isArray(xArray) ? xArray : [];
+  const safeY = Array.isArray(yArray) ? yArray : [];
+
+  if (!hasBounds && safeX.length && safeY.length) {
+    const count = Math.min(safeX.length, safeY.length);
+    minX = Number(safeX[0]);
+    minY = Number(safeY[0]);
+    maxX = minX;
+    maxY = minY;
+    for (let i = 1; i < count; i++) {
+      const x = Number(safeX[i]);
+      const y = Number(safeY[i]);
+      if (Number.isFinite(x)) {
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+      }
+      if (Number.isFinite(y)) {
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+    return null;
+  }
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const extentX = maxX - minX;
+  const extentY = maxY - minY;
+  const extent = Math.max(extentX, extentY);
+  const scale = extent > 0 ? 2 / extent : 1;
+
+  return {
+    centerX,
+    centerY,
+    scale,
+  };
+};
+
+const normalizePointArrays = (xArray, yArray, bounds, precision) => {
+  const safeX = Array.isArray(xArray) ? xArray : [];
+  const safeY = Array.isArray(yArray) ? yArray : [];
+
+  if (!bounds || safeX.length === 0 || safeY.length === 0) {
+    return new Float32Array();
+  }
+
+  const count = Math.min(safeX.length, safeY.length);
+  const stride = Math.max(1, Math.floor(BASE_PRECISION / Math.max(1, precision)));
+  const outputCount = Math.ceil(count / stride);
+  const buffer = new Float32Array(outputCount * 2);
+  let offset = 0;
+
+  for (let i = 0; i < count; i += stride) {
+    const x = (Number(safeX[i]) - bounds.centerX) * bounds.scale;
+    const y = (Number(safeY[i]) - bounds.centerY) * bounds.scale;
+    buffer[offset++] = x;
+    buffer[offset++] = y;
+  }
+
+  return buffer;
+};
+
 const hexToRgba = (hex) => {
   if (typeof hex !== "string") {
     return [0, 0, 0, 1];
@@ -157,11 +234,216 @@ const App = () => {
 
   
   const requestTimeoutRef = useRef(null);
+  const wsRef = useRef(null);
+  const precisionRef = useRef(viewState.precision);
+  const pendingRequestRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const isUnmountedRef = useRef(false);
+  const streamStateRef = useRef({
+    bounds: null,
+    points: new Float32Array(),
+    primePoints: [],
+  });
 
   const primeRaceColors = useMemo(
     () => selectedColor.map((color) => hexToRgba(color)),
     [selectedColor]
   );
+
+  useEffect(() => {
+    precisionRef.current = viewState.precision;
+  }, [viewState.precision]);
+
+  const appendFloat32 = useCallback((prev, next) => {
+    if (!next || next.length === 0) {
+      return prev;
+    }
+    if (!prev || prev.length === 0) {
+      return next;
+    }
+    const merged = new Float32Array(prev.length + next.length);
+    merged.set(prev, 0);
+    merged.set(next, prev.length);
+    return merged;
+  }, []);
+
+  const handleStreamMessage = useCallback((message) => {
+    const precision = precisionRef.current;
+
+    if (message.type === "start") {
+      const bounds = buildBoundsFromArrays(message.bounds?.min, message.bounds?.max, [], []);
+      streamStateRef.current = {
+        bounds,
+        points: new Float32Array(),
+        primePoints: [],
+      };
+      setRenderPoints(new Float32Array());
+      setPrimeRaceRenderPoints([]);
+      return;
+    }
+
+    if (message.type === "chunk") {
+      const bounds = streamStateRef.current.bounds;
+      if (!bounds) {
+        return;
+      }
+
+      const payload = message.data || {};
+      const pointsData = payload.points || {};
+      const primaryX = Array.isArray(pointsData.x) ? pointsData.x : [];
+      const primaryY = Array.isArray(pointsData.y) ? pointsData.y : [];
+      const nextPoints = normalizePointArrays(primaryX, primaryY, bounds, precision);
+      streamStateRef.current.points = appendFloat32(streamStateRef.current.points, nextPoints);
+      setRenderPoints(streamStateRef.current.points);
+
+      const primeData = payload.primeRaces || {};
+      const primeKeys = Object.keys(primeData);
+      if (primeKeys.length) {
+        const nextPrimePoints = [...streamStateRef.current.primePoints];
+        primeKeys.forEach((key) => {
+          const index = Math.max(0, parseInt(key, 10) - 1);
+          const list = primeData[key] || {};
+          const xList = Array.isArray(list.x) ? list.x : [];
+          const yList = Array.isArray(list.y) ? list.y : [];
+          const nextChunk = normalizePointArrays(xList, yList, bounds, precision);
+          nextPrimePoints[index] = appendFloat32(nextPrimePoints[index] || new Float32Array(), nextChunk);
+        });
+
+        streamStateRef.current.primePoints = nextPrimePoints;
+        setPrimeRaceRenderPoints(nextPrimePoints);
+        setPrimeRacesToggles((prev) =>
+          prev.length === nextPrimePoints.length
+            ? prev
+            : Array(nextPrimePoints.length).fill(false)
+        );
+        setSelectedColor((prev) =>
+          prev.length === nextPrimePoints.length
+            ? prev
+            : Array(nextPrimePoints.length).fill("#FF4136")
+        );
+      }
+      return;
+    }
+  }, [appendFloat32]);
+
+  const handleResponseData = useCallback((data) => {
+    if (data && data.stream && data.type) {
+      handleStreamMessage(data);
+      return;
+    }
+
+    const precision = precisionRef.current;
+
+    if (data && data.version === 1 && data.data) {
+      const payload = data.data || {};
+      const pointsData = payload.points || {};
+      const primaryX = Array.isArray(pointsData.x) ? pointsData.x : [];
+      const primaryY = Array.isArray(pointsData.y) ? pointsData.y : [];
+      const bounds = buildBoundsFromArrays(data.bounds?.min, data.bounds?.max, primaryX, primaryY);
+
+      setRenderPoints(normalizePointArrays(primaryX, primaryY, bounds, precision));
+
+      const primeData = payload.primeRaces || {};
+      const primeKeys = Object.keys(primeData);
+      const nextPrimePoints = primeKeys.map((key) => {
+        const list = primeData[key] || {};
+        const xList = Array.isArray(list.x) ? list.x : [];
+        const yList = Array.isArray(list.y) ? list.y : [];
+        return normalizePointArrays(xList, yList, bounds, precision);
+      });
+
+      setPrimeRaceRenderPoints(nextPrimePoints);
+      setPrimeRacesToggles((prev) =>
+        prev.length === nextPrimePoints.length
+          ? prev
+          : Array(nextPrimePoints.length).fill(false)
+      );
+      setSelectedColor((prev) =>
+        prev.length === nextPrimePoints.length
+          ? prev
+          : Array(nextPrimePoints.length).fill("#FF4136")
+      );
+      return;
+    }
+
+    const primaryPoints = (data.points && data.points.points) ? data.points.points : [];
+    const minPoint = (data.min && data.min.points && data.min.points[0]) ? data.min.points[0] : null;
+    const maxPoint = (data.max && data.max.points && data.max.points[0]) ? data.max.points[0] : null;
+    const bounds = buildBounds(minPoint, maxPoint, primaryPoints);
+
+    setRenderPoints(normalizePoints(primaryPoints, bounds, precision));
+
+    const primeData = data.PrimeRaces || {};
+    const primeKeys = Object.keys(primeData);
+    const nextPrimePoints = primeKeys.map((key) => {
+      const list = primeData[key];
+      const points = list && list.points ? list.points : [];
+      return normalizePoints(points, bounds, precision);
+    });
+
+    setPrimeRaceRenderPoints(nextPrimePoints);
+    setPrimeRacesToggles((prev) =>
+      prev.length === nextPrimePoints.length
+        ? prev
+        : Array(nextPrimePoints.length).fill(false)
+    );
+    setSelectedColor((prev) =>
+      prev.length === nextPrimePoints.length
+        ? prev
+        : Array(nextPrimePoints.length).fill("#FF4136")
+    );
+  }, [handleStreamMessage]);
+
+  const connectWebSocket = useCallback(() => {
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+      return;
+    }
+
+    const ws = new WebSocket("ws://localhost:8888/ws");
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      if (pendingRequestRef.current) {
+        ws.send(JSON.stringify(pendingRequestRef.current));
+        pendingRequestRef.current = null;
+      }
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        handleResponseData(payload);
+      } catch (error) {
+        console.error("Error parsing websocket response:", error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      wsRef.current = null;
+      if (!isUnmountedRef.current) {
+        reconnectTimerRef.current = setTimeout(() => {
+          connectWebSocket();
+        }, 1000);
+      }
+    };
+  }, [handleResponseData]);
+
+  useEffect(() => {
+    connectWebSocket();
+    return () => {
+      isUnmountedRef.current = true;
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [connectWebSocket]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -189,62 +471,45 @@ const App = () => {
     setRemaindersArray(remaindersList);
 
     const requestData = {
-      zoom: viewState.zoom,
-      panX: viewState.panX,
-      panY: viewState.panY,
-      precision: Math.round(viewState.precision),
-      nValue: parseInt(nValue, 10) || 0,
-      pValue: parseInt(pValue, 10) || 0,
-      lValue: parseFloat(lValue, 10) || 0,
-      Algorithm: parseInt(algorithm, 10),
-      RecommendL: useRecommendedScaleFactor,
-      PrimeRaces: {
-        primes: primesList,
-        remainders: remaindersList,
+      version: 1,
+      requestId: `req-${Date.now()}`,
+      data: {
+        params: {
+          nValue: parseInt(nValue, 10) || 0,
+          pValue: parseInt(pValue, 10) || 0,
+          lValue: parseFloat(lValue, 10) || 0,
+          algorithm: parseInt(algorithm, 10),
+          precision: Math.round(viewState.precision),
+          recommendL: useRecommendedScaleFactor,
+        },
+        view: {
+          zoom: viewState.zoom,
+          panX: viewState.panX,
+          panY: viewState.panY,
+        },
+        filters: {
+          primeRaces: {
+            primes: primesList,
+            remainders: remaindersList,
+          },
+        },
+        stream: {
+          enabled: true,
+          chunkSize: 2000,
+        },
       },
     };
 
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    };
+    const activeSocket = wsRef.current;
+    if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
+      activeSocket.send(JSON.stringify(requestData));
+      return;
+    }
 
-    fetch("http://localhost:8888/send-data", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        const primaryPoints = (data.points && data.points.points) ? data.points.points : [];
-        const minPoint = (data.min && data.min.points && data.min.points[0]) ? data.min.points[0] : null;
-        const maxPoint = (data.max && data.max.points && data.max.points[0]) ? data.max.points[0] : null;
-        const bounds = buildBounds(minPoint, maxPoint, primaryPoints);
-
-        setRenderPoints(normalizePoints(primaryPoints, bounds, viewState.precision));
-
-        const primeData = data.PrimeRaces || {};
-        const primeKeys = Object.keys(primeData);
-        const nextPrimePoints = primeKeys.map((key) => {
-          const list = primeData[key];
-          const points = list && list.points ? list.points : [];
-          return normalizePoints(points, bounds, viewState.precision);
-        });
-
-        setPrimeRaceRenderPoints(nextPrimePoints);
-        setPrimeRacesToggles((prev) =>
-          prev.length === nextPrimePoints.length
-            ? prev
-            : Array(nextPrimePoints.length).fill(false)
-        );
-        setSelectedColor((prev) =>
-          prev.length === nextPrimePoints.length
-            ? prev
-            : Array(nextPrimePoints.length).fill("#FF4136")
-        );
-      })
-      .catch((error) => {
-        console.error("Error sending data:", error);
-      });
+    pendingRequestRef.current = requestData;
+    if (!activeSocket || activeSocket.readyState === WebSocket.CLOSED) {
+      connectWebSocket();
+    }
   }, [
     primes,
     remainders,
@@ -257,6 +522,7 @@ const App = () => {
     viewState.panY,
     viewState.precision,
     algorithm,
+    connectWebSocket,
   ]);
 
   useEffect(() => {

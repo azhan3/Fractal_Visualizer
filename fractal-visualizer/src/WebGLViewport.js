@@ -202,15 +202,15 @@ const WebGLViewport = ({
 
       const dpr = window.devicePixelRatio || 1;
       resizeCanvasToDisplaySize(canvas, dpr);
-      glInstance.viewport(0, 0, canvas.width, canvas.height);
+      const size = Math.min(canvas.width, canvas.height);
+      const offsetX = Math.floor((canvas.width - size) / 2);
+      const offsetY = Math.floor((canvas.height - size) / 2);
+      glInstance.viewport(offsetX, offsetY, size, size);
       glInstance.clear(glInstance.COLOR_BUFFER_BIT);
 
       const currentView = viewStateRef.current;
       glInstance.useProgram(program);
-      let aspect = 1.0;
-      if (canvas.width > 0 && canvas.height > 0) {
-        aspect = canvas.height / canvas.width;
-      }
+      const aspect = 1.0;
       if (uniformsInstance.aspect) {
         glInstance.uniform1f(uniformsInstance.aspect, aspect);
       }
@@ -318,27 +318,39 @@ const WebGLViewport = ({
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const handleWheel = (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return undefined;
+    }
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = 1 - ((event.clientY - rect.top) / rect.height) * 2;
-    const zoomFactor = Math.pow(2, -event.deltaY * 0.001);
+    const handleWheel = (event) => {
+      event.preventDefault();
 
-    onViewStateChange((prev) => {
-      const nextZoom = clamp(prev.zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
-      const zoomRatio = nextZoom / prev.zoom;
-      const panX = prev.panX + (1 - zoomRatio) * (ndcX - prev.panX);
-      const panY = prev.panY + (1 - zoomRatio) * (ndcY - prev.panY);
-      return {
-        ...prev,
-        zoom: nextZoom,
-        panX,
-        panY,
-      };
-    });
-  };
+      const rect = canvas.getBoundingClientRect();
+      const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const ndcY = 1 - ((event.clientY - rect.top) / rect.height) * 2;
+      const zoomFactor = Math.pow(2, -event.deltaY * 0.001);
+
+      onViewStateChange((prev) => {
+        const nextZoom = clamp(prev.zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
+        const zoomRatio = nextZoom / prev.zoom;
+        const panX = prev.panX + (1 - zoomRatio) * (ndcX - prev.panX);
+        const panY = prev.panY + (1 - zoomRatio) * (ndcY - prev.panY);
+        return {
+          ...prev,
+          zoom: nextZoom,
+          panX,
+          panY,
+        };
+      });
+    };
+
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener("wheel", handleWheel);
+    };
+  }, [onViewStateChange]);
 
   return (
     <canvas
@@ -349,7 +361,6 @@ const WebGLViewport = ({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerUp}
-      onWheel={handleWheel}
     />
   );
 };

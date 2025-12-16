@@ -20,41 +20,56 @@ public class PAddicRepresenter {
 
     // Convert an integer to plane coordinates
     public double[] toPlane(int n) {
+        double[] coords = new double[2];
+        toPlane(n, coords);
+        return coords;
+    }
+
+    public void toPlane(int n, double[] out) {
         double l = this.l;
         int p = this.p;
-        List<Integer> decomposedInt = completedIntToBase(n);
+        double angleStep = 2 * Math.PI / p;
+        double power = 1.0;
 
         double real = 0.0;
         double imag = 0.0;
-        for (int i = 0; i < decomposedInt.size(); i++) {
-            int c = decomposedInt.get(i);
-            double power = Math.pow(l, i);
-            double angle = c * 2 * Math.PI / p;
 
-            real += power * Math.cos(angle);
-            imag += power * Math.sin(angle);
+        for (int i = 0; i < outputLength; i++) {
+            int c = n % p;
+            n = n / p;
+            if (c != 0) {
+                double angle = c * angleStep;
+                real += power * Math.cos(angle);
+                imag += power * Math.sin(angle);
+            }
+            power *= l;
         }
 
-        return new double[]{real, imag};
+        out[0] = real;
+        out[1] = imag;
     }
 
     // Transform a sample based on prime races
     public List<PointList> transformSample(Integer ns, JsonObject primeRaces) {
-        PointList secondaryPointList = new PointList();
         JsonArray primes = primeRaces.get("primes").getAsJsonArray();
         JsonArray remainders = primeRaces.get("remainders").getAsJsonArray();
         int num = primes.size();
 
         List<PointList> pointList = new ArrayList<PointList>(num + 1);
 
+        int primaryCapacity = Math.max(0, ns) + 1;
+        pointList.add(new PointList(primaryCapacity));
+
         // Initialize each PointList in the list
-        for (int i = 0; i <= num; ++i) {
+        for (int i = 0; i < num; ++i) {
             pointList.add(new PointList());
         }
 
+        double[] planeCoords = new double[2];
+
         // Iterate over each integer from 0 to ns
         for (int n = 0; n <= ns; ++n) {
-            double[] planeCoords = toPlane(n);
+            toPlane(n, planeCoords);
             double x = planeCoords[0];
             double y = planeCoords[1];
 

@@ -1,6 +1,74 @@
-/node_modules
-/.pnp
+# Node
+node_modules/
+.pnp/
 .pnp.js
 
+# Gradle
 /.gradle
+/.gradle/
+gradle-app.setting
+
+# Build outputs
+/build/
+/dist/
+/fractal-visualizer/build/
+
+# VS Code
+.vscode/
 .history
+
+# Java
+*.class
+*.jar
+*.war
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+debug.log*
+
+# Java heap/dumps
+hs_err_pid*
+heapdump.hprof
+
+# IDE
+.idea/
+out/
+
+# Environment
+.env
+
+# Temporary
+tmp/
+*.tmp
+*.bak
+
+# Coverage
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Electron
+electron-app/node_modules/
+
+# Misc
+*.swp
+*.swo
+
+# Webpack
+dist/
+
+# Gradle wrapper
+gradle/wrapper/gradle-wrapper.properties
+
+# Reports
+reports/
+
+# Workspace files
+.vscode/*.code-workspace

@@ -21,6 +21,12 @@ public abstract class AlgorithmBoilerplate {
     // Abstract method to convert an integer to plane coordinates
     public abstract double[] toPlane(int n);
 
+    public void toPlaneInto(int n, double[] out) {
+        double[] coords = toPlane(n);
+        out[0] = coords[0];
+        out[1] = coords[1];
+    }
+
     // Transforms a sample based on prime races
     public List<PointList> transformSample(Integer ns, JsonObject primeRaces) {
         // Extract the primes and remainders from the JSON object
@@ -31,15 +37,20 @@ public abstract class AlgorithmBoilerplate {
         // Create a list of PointLists to store the transformed points
         List<PointList> pointList = new ArrayList<PointList>(num + 1);
 
+        int primaryCapacity = Math.max(0, ns) + 1;
+        pointList.add(new PointList(primaryCapacity));
+
         // Initialize each PointList in the list
-        for (int i = 0; i <= num; ++i) {
+        for (int i = 0; i < num; ++i) {
             pointList.add(new PointList());
         }
+
+        double[] planeCoords = new double[2];
 
         // Iterate over each integer from 0 to ns
         for (int n = 0; n <= ns; ++n) {
             // Convert the integer to plane coordinates
-            double[] planeCoords = toPlane(n);
+            toPlaneInto(n, planeCoords);
             double x = planeCoords[0];
             double y = planeCoords[1];
 
