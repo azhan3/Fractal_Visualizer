@@ -21,6 +21,8 @@ import org.backend.math.PAddicRepresenter;
 import org.backend.util.JSONAppender;
 import org.backend.util.PointList;
 import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
@@ -374,32 +376,50 @@ public class Backend extends AbstractVerticle {
                            double[][] raceX,
                            double[][] raceY,
                            int[] raceCounts) {
-        JSONAppender chunk = new JSONAppender();
-        chunk.addNumber("version", 1);
+        // Hybrid: send small JSON metadata first, then a binary ArrayBuffer with concatenated float32 payloads
+        JSONAppender meta = new JSONAppender();
+        meta.addNumber("version", 1);
         if (requestId != null && !requestId.isEmpty()) {
-            chunk.addString("requestId", requestId);
+            meta.addString("requestId", requestId);
         }
-        chunk.addBoolean("stream", true);
-        chunk.addString("type", "chunk");
-        chunk.addNumber("seq", seq);
+        meta.addBoolean("stream", true);
+        meta.addString("type", "chunk-meta");
+        meta.addNumber("seq", seq);
 
-        JSONAppender dataAppender = new JSONAppender();
-        JSONAppender pointsAppender = new JSONAppender();
-        pointsAppender.addNumberArray("x", primaryX, primaryCount);
-        pointsAppender.addNumberArray("y", primaryY, primaryCount);
-        dataAppender.addAppender("points", pointsAppender);
-
-        JSONAppender primeAppender = new JSONAppender();
+        // Describe the layout: primary length and prime lengths
+        meta.addNumber("primaryCount", primaryCount);
+        JSONAppender primeCounts = new JSONAppender();
         for (int i = 0; i < raceCounts.length; i++) {
-            JSONAppender raceAppender = new JSONAppender();
-            raceAppender.addNumberArray("x", raceX[i], raceCounts[i]);
-            raceAppender.addNumberArray("y", raceY[i], raceCounts[i]);
-            primeAppender.addAppender(Integer.toString(i + 1), raceAppender);
+            primeCounts.addNumber(Integer.toString(i + 1), raceCounts[i]);
         }
-        dataAppender.addAppender("primeRaces", primeAppender);
+        meta.addAppender("primeCounts", primeCounts);
 
-        chunk.addAppender("data", dataAppender);
-        webSocket.writeTextMessage(chunk.getJSONString());
+        // Include bounds or other metadata if needed (client already has bounds from start)
+        webSocket.writeTextMessage(meta.getJSONString());
+
+        // Build binary payload: concatenate primary x,y then each prime's x,y as float32 little-endian
+        // Calculate total floats: primaryCount*2 + sum(primeCounts*2)
+        int totalFloats = primaryCount * 2;
+        for (int i = 0; i < raceCounts.length; i++) {
+            totalFloats += raceCounts[i] * 2;
+        }
+
+        ByteBuffer bb = ByteBuffer.allocate(totalFloats * 4).order(ByteOrder.LITTLE_ENDIAN);
+        // primary
+        for (int i = 0; i < primaryCount; i++) {
+            bb.putFloat((float) primaryX[i]);
+            bb.putFloat((float) primaryY[i]);
+        }
+        // primes
+        for (int i = 0; i < raceCounts.length; i++) {
+            int count = raceCounts[i];
+            for (int j = 0; j < count; j++) {
+                bb.putFloat((float) raceX[i][j]);
+                bb.putFloat((float) raceY[i][j]);
+            }
+        }
+
+        webSocket.writeBinaryMessage(Buffer.buffer(bb.array()));
     }
 
     private double[] computeBounds(int algo, int p, float l, int precision, int n) {

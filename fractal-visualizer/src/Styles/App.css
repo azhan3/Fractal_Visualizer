@@ -9,10 +9,8 @@ box-sizing: border-box;
 
 .main {
   flex: 1;
-  width: 80%;
-
-  padding: 10px; /* Add the desired spacing value */
-  /* Add any additional styles for the main content */
+  height: 100%;
+  padding: 0;
 }
 .floating-area::-webkit-scrollbar {
   display: none;

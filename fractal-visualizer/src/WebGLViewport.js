@@ -202,15 +202,15 @@ const WebGLViewport = ({
 
       const dpr = window.devicePixelRatio || 1;
       resizeCanvasToDisplaySize(canvas, dpr);
-      const size = Math.min(canvas.width, canvas.height);
-      const offsetX = Math.floor((canvas.width - size) / 2);
-      const offsetY = Math.floor((canvas.height - size) / 2);
-      glInstance.viewport(offsetX, offsetY, size, size);
+      glInstance.viewport(0, 0, canvas.width, canvas.height);
       glInstance.clear(glInstance.COLOR_BUFFER_BIT);
 
       const currentView = viewStateRef.current;
       glInstance.useProgram(program);
-      const aspect = 1.0;
+      let aspect = 1.0;
+      if (canvas.width > 0 && canvas.height > 0) {
+        aspect = canvas.height / canvas.width;
+      }
       if (uniformsInstance.aspect) {
         glInstance.uniform1f(uniformsInstance.aspect, aspect);
       }

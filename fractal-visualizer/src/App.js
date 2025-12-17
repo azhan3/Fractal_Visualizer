@@ -14,11 +14,7 @@ import Draggable from "react-draggable";
 
 const DEFAULT_PRECISION = 30;
 const DEFAULT_ZOOM = 1;
-const ZOOM_MIN = 0.1;
-const ZOOM_MAX = 128;
 const BASE_PRECISION = 30;
-
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 const parseNumberList = (value) => {
   if (!value || !value.trim()) {
@@ -171,6 +167,28 @@ const normalizePointArrays = (xArray, yArray, bounds, precision) => {
   for (let i = 0; i < count; i += stride) {
     const x = (Number(safeX[i]) - bounds.centerX) * bounds.scale;
     const y = (Number(safeY[i]) - bounds.centerY) * bounds.scale;
+    buffer[offset++] = x;
+    buffer[offset++] = y;
+  }
+
+  return buffer;
+};
+
+// Normalize raw Float32Array pairs (x,y,x,y,...) into scaled Float32Array
+const normalizeFloat32Raw = (float32Pairs, bounds, precision) => {
+  if (!float32Pairs || float32Pairs.length === 0 || !bounds) {
+    return new Float32Array();
+  }
+
+  const count = Math.floor(float32Pairs.length / 2);
+  const stride = Math.max(1, Math.floor(BASE_PRECISION / Math.max(1, precision)));
+  const outputCount = Math.ceil(count / stride);
+  const buffer = new Float32Array(outputCount * 2);
+  let offset = 0;
+
+  for (let i = 0; i < count; i += stride) {
+    const x = (float32Pairs[i * 2 + 0] - bounds.centerX) * bounds.scale;
+    const y = (float32Pairs[i * 2 + 1] - bounds.centerY) * bounds.scale;
     buffer[offset++] = x;
     buffer[offset++] = y;
   }
@@ -400,6 +418,7 @@ const App = () => {
     }
 
     const ws = new WebSocket("ws://localhost:8888/ws");
+    ws.binaryType = 'arraybuffer';
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -409,12 +428,83 @@ const App = () => {
       }
     };
 
+    // map of pending metadata for binary frames keyed by seq
+    const metaMap = {};
+
     ws.onmessage = (event) => {
       try {
-        const payload = JSON.parse(event.data);
-        handleResponseData(payload);
+        if (typeof event.data === 'string') {
+          const payload = JSON.parse(event.data);
+          // If this is chunk metadata, store it for the following binary frame
+          if (payload.type === 'chunk-meta' && payload.seq !== undefined) {
+            metaMap[payload.seq] = payload;
+            return;
+          }
+          handleResponseData(payload);
+          return;
+        }
+
+        // Binary frame: expect Float32Array payload matching the most recent meta by seq order
+        const buffer = event.data;
+        const floats = new Float32Array(buffer);
+
+        // Find the oldest seq in metaMap (small map, linear scan is fine)
+        const seqKeys = Object.keys(metaMap).map((k) => parseInt(k, 10)).sort((a, b) => a - b);
+        if (seqKeys.length === 0) {
+          console.warn('Received binary payload with no metadata');
+          return;
+        }
+        const seq = seqKeys[0];
+        const meta = metaMap[seq];
+        delete metaMap[seq];
+
+        const precision = precisionRef.current;
+        const bounds = streamStateRef.current.bounds;
+        if (!bounds) {
+          return;
+        }
+
+        // Slice floats according to meta.primaryCount and primeCounts
+        let offset = 0;
+        const primaryCount = meta.primaryCount || 0;
+        const primaryFloats = floats.subarray(offset, offset + primaryCount * 2);
+        offset += primaryCount * 2;
+        const primaryBuffer = new Float32Array(primaryFloats);
+
+        const nextPrimary = normalizeFloat32Raw(primaryBuffer, bounds, precision);
+        streamStateRef.current.points = appendFloat32(streamStateRef.current.points, nextPrimary);
+        setRenderPoints(streamStateRef.current.points);
+
+        const primeCounts = meta.primeCounts || {};
+        const primeKeys = Object.keys(primeCounts);
+        if (primeKeys.length) {
+          const nextPrimePoints = [...streamStateRef.current.primePoints];
+          for (const key of primeKeys) {
+            const count = primeCounts[key] || 0;
+            const floatLen = count * 2;
+            const slice = floats.subarray(offset, offset + floatLen);
+            offset += floatLen;
+            const normalized = normalizeFloat32Raw(new Float32Array(slice), bounds, precision);
+            const index = Math.max(0, parseInt(key, 10) - 1);
+            nextPrimePoints[index] = appendFloat32(nextPrimePoints[index] || new Float32Array(), normalized);
+          }
+
+          streamStateRef.current.primePoints = nextPrimePoints;
+          setPrimeRaceRenderPoints(nextPrimePoints);
+          setPrimeRacesToggles((prev) =>
+            prev.length === nextPrimePoints.length
+              ? prev
+              : Array(nextPrimePoints.length).fill(false)
+          );
+          setSelectedColor((prev) =>
+            prev.length === nextPrimePoints.length
+              ? prev
+              : Array(nextPrimePoints.length).fill("#FF4136")
+          );
+        }
+
       } catch (error) {
-        console.error("Error parsing websocket response:", error);
+        console.error("Error handling websocket message:", error);
       }
     };
 
@@ -447,20 +537,6 @@ const App = () => {
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
-  };
-
-  const handleZoomIn = () => {
-    setViewState((prev) => ({
-      ...prev,
-      zoom: clamp(prev.zoom * 2, ZOOM_MIN, ZOOM_MAX),
-    }));
-  };
-
-  const handleZoomOut = () => {
-    setViewState((prev) => ({
-      ...prev,
-      zoom: clamp(prev.zoom / 2, ZOOM_MIN, ZOOM_MAX),
-    }));
   };
 
   const requestPoints = useCallback(() => {
@@ -540,9 +616,7 @@ const App = () => {
     };
   }, [requestPoints]);
 
-  const handleSend = () => {
-    requestPoints();
-  };
+  
 
   const handleNValueChange = (event) => {
     setNValue(event.target.value);
@@ -560,9 +634,7 @@ const App = () => {
   const handleRemaindersChange = (event) => {
     setRemainders(event.target.value);
   };
-  const handleVisualize = () => {
-    requestPoints();
-  };
+  
   const handleSizeChange = (event) => {
     const value = event.target.value;
     setDotSize(value === "" ? 1 : Number(value));
@@ -705,64 +777,6 @@ const App = () => {
       </Draggable>
 
       <div className="sidebar">
-        <div className="button">
-          <div className="button-wrapper" onClick={handleZoomIn}>
-            <div className="text">Zoom In</div>
-            <span className="icon">
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <path
-                    d="M20 20L14.9497 14.9497M14.9497 14.9497C16.2165 13.683 17 11.933 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10M14.9497 14.9497C13.683 16.2165 11.933 17 10 17C8.09269 17 6.36355 16.2372 5.10102 15M7 10H13M10 7V13"
-                    stroke="#B78C38"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>{" "}
-                </g>
-              </svg>
-            </span>
-          </div>
-        </div>
-
-        <div className="button">
-          <div className="button-wrapper" onClick={handleZoomOut}>
-            <div className="text">Zoom Out</div>
-            <span className="icon">
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  <path
-                    d="M20 20L14.9497 14.9498M14.9497 14.9498C16.2165 13.683 17 11.933 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10M14.9497 14.9498C13.683 16.2165 11.933 17 10 17C8.09269 17 6.36355 16.2372 5.10102 15M7 10H13"
-                    stroke="#B78C38"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </g>
-              </svg>
-            </span>
-          </div>
-        </div>
 
         <div className="button">
           <div className="button-wrapper" onClick={handleReset}>
@@ -896,52 +910,7 @@ const App = () => {
           </div>
         </label>
 
-        <div className="button">
-          <div className="button-wrapper" onClick={handleSend}>
-            <div className="text">Send</div>
-            <span className="icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  <path
-                    d="M20 4L3 9.31372L10.5 13.5M20 4L14.5 21L10.5 13.5M20 4L10.5 13.5"
-                    stroke="#B78C38"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </g>
-              </svg>
-            </span>
-          </div>
-        </div>
-
-        <div className="button">
-          <div className="button-wrapper" onClick={handleVisualize}>
-            <div className="text">Visualize!</div>
-            <span className="icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 32 32"
-                fill="#fff"
-              >
-                <path
-                  fill="#B78C38"
-                  d="M16,1C7.729,1,1,7.729,1,16s6.729,15,15,15s15-6.729,15-15S24.271,1,16,1z M28.949,15H17V3.051C23.37,3.539,28.461,8.63,28.949,15z M3,16C3,8.832,8.832,3,16,3v13l4.876,12.043C19.369,28.655,17.725,29,16,29C8.832,29,3,23.168,3,16z M21.786,27.625l-4.159-10.29l7.701,7.701C24.307,26.088,23.11,26.963,21.786,27.625z M26.001,24.294L17.707,16H29C29,19.151,27.872,22.042,26.001,24.294z"
-                ></path>
-              </svg>
-            </span>
-          </div>
-        </div>
+        
         <div>
           <ToggleSwitch onChoiceChange={handleChoiceChange} />
         </div>
