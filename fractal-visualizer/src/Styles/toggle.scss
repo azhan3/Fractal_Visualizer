@@ -3,7 +3,6 @@
   justify-content: center;
   font-family: sans-serif;
   margin-top: 3vh;
-  transition: transform 0.3s ease; /* Add transition for smooth animation */
 }
 
 .container.collapsed .switch-button-container {
@@ -37,7 +36,6 @@
   justify-content: center;
   z-index: 3;
   pointer-events: none;
-  transition: transform 0.3s ease; /* Add transition for smooth animation */
 }
 
 .container.collapsed .switch-button:before {
@@ -58,7 +56,6 @@
 
 .switch-button-checkbox:checked + .switch-button-label:before {
   transform: translateX(120px);
-  transition: transform 300ms linear;
 }
 
 .switch-button-label {
@@ -79,7 +76,6 @@
   top: 0;
   border-radius: 15px;
   transform: translateX(0);
-  transition: transform 300ms;
 }
 
 .switch-button-label-span {

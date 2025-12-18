@@ -21,7 +21,6 @@
 }
 .ip__track {
     stroke: hsl(var(--hue),90%,90%);
-    transition: stroke var(--trans-dur);
 }
 .ip__worm1,
 .ip__worm2 {

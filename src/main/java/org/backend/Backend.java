@@ -1,6 +1,8 @@
 package org.backend;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -23,10 +25,29 @@ import org.backend.util.PointList;
 import java.util.List;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class Backend extends AbstractVerticle {
     private final Gson gson = new Gson();
-    HttpServerOptions serverOptions = new HttpServerOptions().setIdleTimeout(0);
+    private final Map<ServerWebSocket, StreamJob> activeJobs = new ConcurrentHashMap<>();
+    // Authoritative maximum precision: UI precision control is disabled and server uses this value
+    private static final int MAX_PRECISION = 100;
+    HttpServerOptions serverOptions = new HttpServerOptions()
+            .setIdleTimeout(0)
+            .setPerMessageWebSocketCompressionSupported(false);
+
+    private static class StreamJob {
+        private final String requestId;
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
+        private StreamJob(String requestId) {
+            this.requestId = requestId;
+        }
+    }
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -53,6 +74,8 @@ public class Backend extends AbstractVerticle {
                         webSocket.reject();
                         return;
                     }
+                    webSocket.setWriteQueueMaxSize(4 * 1024 * 1024);
+                    webSocket.closeHandler(v -> cancelActiveJob(webSocket));
 
                     webSocket.textMessageHandler(message -> {
                         if (message == null || message.isEmpty()) {
@@ -62,7 +85,7 @@ public class Backend extends AbstractVerticle {
                         try {
                             JsonObject data = gson.fromJson(message, JsonObject.class);
                             if (isStreamRequest(data)) {
-                                processRequestStream(data, webSocket);
+                                startStreamRequest(data, webSocket);
                             } else {
                                 String responseJson = processRequest(data);
                                 webSocket.writeTextMessage(responseJson);
@@ -133,7 +156,8 @@ public class Backend extends AbstractVerticle {
         int algo = version == 1 ? getInt(params, "algorithm", 1) : getInt(data, "Algorithm", 1);
         float l = version == 1 ? getFloat(params, "lValue", 0) : getFloat(data, "lValue", 0);
         float zoom = version == 1 ? getFloat(view, "zoom", 1) : getFloat(data, "zoom", 1);
-        int precision = version == 1 ? getInt(params, "precision", 30) : getInt(data, "precision", 30);
+        // Precision control disabled on client: always use MAX_PRECISION server-side
+        int precision = MAX_PRECISION;
         boolean useRecommendedL = version == 1
                 ? getBoolean(params, "recommendL", false)
                 : getBoolean(data, "RecommendL", false);
@@ -231,7 +255,26 @@ public class Backend extends AbstractVerticle {
         return false;
     }
 
-    private void processRequestStream(JsonObject data, ServerWebSocket webSocket) {
+    private void startStreamRequest(JsonObject data, ServerWebSocket webSocket) {
+        String requestId = getString(data, "requestId", null);
+        StreamJob nextJob = new StreamJob(requestId);
+        StreamJob previous = activeJobs.put(webSocket, nextJob);
+        if (previous != null) {
+            previous.cancelled.set(true);
+        }
+
+        vertx.executeBlocking(promise -> {
+            runStreamWorker(data, webSocket, nextJob);
+            promise.complete();
+        }, false, ar -> {
+            // no-op; errors handled in worker
+        });
+    }
+
+    private void runStreamWorker(JsonObject data, ServerWebSocket webSocket, StreamJob job) {
+        if (!isJobActive(webSocket, job)) {
+            return;
+        }
         int version = getInt(data, "version", 0);
         String requestId = getString(data, "requestId", null);
 
@@ -251,7 +294,8 @@ public class Backend extends AbstractVerticle {
         int algo = version == 1 ? getInt(params, "algorithm", 1) : getInt(data, "Algorithm", 1);
         float l = version == 1 ? getFloat(params, "lValue", 0) : getFloat(data, "lValue", 0);
         float zoom = version == 1 ? getFloat(view, "zoom", 1) : getFloat(data, "zoom", 1);
-        int precision = version == 1 ? getInt(params, "precision", 30) : getInt(data, "precision", 30);
+        // Stream precision overridden by server to avoid expensive client-driven values
+        int precision = MAX_PRECISION;
         boolean useRecommendedL = version == 1
                 ? getBoolean(params, "recommendL", false)
                 : getBoolean(data, "RecommendL", false);
@@ -302,8 +346,9 @@ public class Backend extends AbstractVerticle {
         metaAppender.addNumber("zoom", zoom);
         metaAppender.addNumber("primeRaceCount", raceCount);
         start.addAppender("meta", metaAppender);
-
-        webSocket.writeTextMessage(start.getJSONString());
+        if (!sendTextBlocking(webSocket, start.getJSONString(), job)) {
+            return;
+        }
 
         StreamGenerator generator = createStreamGenerator(algo, p, l, precision);
         double[] coords = new double[2];
@@ -323,6 +368,9 @@ public class Backend extends AbstractVerticle {
 
         int seq = 0;
         for (int value = 0; value <= n; value++) {
+            if (!isJobActive(webSocket, job)) {
+                return;
+            }
             generator.toPlane(value, coords);
             double x = coords[0];
             double y = coords[1];
@@ -344,7 +392,9 @@ public class Backend extends AbstractVerticle {
             }
 
             if (primaryCount >= chunkSize) {
-                sendChunk(webSocket, requestId, seq++, primaryX, primaryY, primaryCount, raceX, raceY, raceCounts);
+                if (!sendChunk(webSocket, requestId, seq++, primaryX, primaryY, primaryCount, raceX, raceY, raceCounts, job)) {
+                    return;
+                }
                 primaryCount = 0;
                 for (int i = 0; i < raceCount; i++) {
                     raceCounts[i] = 0;
@@ -353,7 +403,9 @@ public class Backend extends AbstractVerticle {
         }
 
         if (primaryCount > 0) {
-            sendChunk(webSocket, requestId, seq++, primaryX, primaryY, primaryCount, raceX, raceY, raceCounts);
+            if (!sendChunk(webSocket, requestId, seq++, primaryX, primaryY, primaryCount, raceX, raceY, raceCounts, job)) {
+                return;
+            }
         }
 
         JSONAppender end = new JSONAppender();
@@ -364,10 +416,10 @@ public class Backend extends AbstractVerticle {
         end.addBoolean("stream", true);
         end.addString("type", "end");
         end.addNumber("seq", seq);
-        webSocket.writeTextMessage(end.getJSONString());
+        sendTextBlocking(webSocket, end.getJSONString(), job);
     }
 
-    private void sendChunk(ServerWebSocket webSocket,
+    private boolean sendChunk(ServerWebSocket webSocket,
                            String requestId,
                            int seq,
                            double[] primaryX,
@@ -375,7 +427,11 @@ public class Backend extends AbstractVerticle {
                            int primaryCount,
                            double[][] raceX,
                            double[][] raceY,
-                           int[] raceCounts) {
+                           int[] raceCounts,
+                           StreamJob job) {
+        if (!isJobActive(webSocket, job)) {
+            return false;
+        }
         // Hybrid: send small JSON metadata first, then a binary ArrayBuffer with concatenated float32 payloads
         JSONAppender meta = new JSONAppender();
         meta.addNumber("version", 1);
@@ -393,9 +449,9 @@ public class Backend extends AbstractVerticle {
             primeCounts.addNumber(Integer.toString(i + 1), raceCounts[i]);
         }
         meta.addAppender("primeCounts", primeCounts);
-
-        // Include bounds or other metadata if needed (client already has bounds from start)
-        webSocket.writeTextMessage(meta.getJSONString());
+        if (!sendTextBlocking(webSocket, meta.getJSONString(), job)) {
+            return false;
+        }
 
         // Build binary payload: concatenate primary x,y then each prime's x,y as float32 little-endian
         // Calculate total floats: primaryCount*2 + sum(primeCounts*2)
@@ -419,7 +475,69 @@ public class Backend extends AbstractVerticle {
             }
         }
 
-        webSocket.writeBinaryMessage(Buffer.buffer(bb.array()));
+        return sendBinaryBlocking(webSocket, Buffer.buffer(bb.array()), job);
+    }
+
+    private boolean isJobActive(ServerWebSocket webSocket, StreamJob job) {
+        return job != null && !job.cancelled.get() && activeJobs.get(webSocket) == job && !webSocket.isClosed();
+    }
+
+    private void cancelActiveJob(ServerWebSocket webSocket) {
+        StreamJob existing = activeJobs.remove(webSocket);
+        if (existing != null) {
+            existing.cancelled.set(true);
+        }
+    }
+
+    private boolean sendTextBlocking(ServerWebSocket webSocket, String text, StreamJob job) {
+        if (!isJobActive(webSocket, job)) {
+            return false;
+        }
+        return awaitWrite(webSocket, handler -> webSocket.writeTextMessage(text, handler), job);
+    }
+
+    private boolean sendBinaryBlocking(ServerWebSocket webSocket, Buffer buffer, StreamJob job) {
+        if (!isJobActive(webSocket, job)) {
+            return false;
+        }
+        return awaitWrite(webSocket, handler -> webSocket.writeBinaryMessage(buffer, handler), job);
+    }
+
+    private boolean awaitWrite(ServerWebSocket webSocket, Consumer<Handler<AsyncResult<Void>>> writer, StreamJob job) {
+        if (!isJobActive(webSocket, job)) {
+            return false;
+        }
+
+        CountDownLatch latch = new CountDownLatch(1);
+        vertx.runOnContext(v -> {
+            if (!isJobActive(webSocket, job)) {
+                latch.countDown();
+                return;
+            }
+
+            Handler<AsyncResult<Void>> done = ar -> latch.countDown();
+            if (webSocket.writeQueueFull()) {
+                webSocket.drainHandler(drain -> {
+                    webSocket.drainHandler(null);
+                    if (!isJobActive(webSocket, job)) {
+                        latch.countDown();
+                        return;
+                    }
+                    writer.accept(done);
+                });
+            } else {
+                writer.accept(done);
+            }
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        return isJobActive(webSocket, job);
     }
 
     private double[] computeBounds(int algo, int p, float l, int precision, int n) {

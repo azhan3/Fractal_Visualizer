@@ -1,6 +1,7 @@
 .container {
   display: flex;
   height: 100vh;
+  position: relative;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -17,7 +18,7 @@
   background-color: #b0babf; /* Set the background color */
   padding: 20px;
   flex-shrink: 0; /* Prevent the sidebar from shrinking */
-  transition: width 0.3s ease; /* Add transition for smooth animation */
+  position: relative;
 }
 
 .container.collapsed .sidebar {
@@ -30,16 +31,54 @@
 /* Styles for the toggle button */
 .sidebar-toggle {
   position: absolute;
-  top: 10px;
-  right: 100px;
+  top: 50%;
+  left: 282px; /* align to the sidebar's right edge when expanded */
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
   cursor: pointer;
-  z-index: 100;
+  z-index: 300;
+  pointer-events: auto;
 }
 
-.sidebar-toggle .icon {
-  width: 100px;
-  height: 100px;
-  /* Add styles for the toggle button icon */
+.container.collapsed .sidebar-toggle {
+  left: -18px;
+}
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  transform-origin: center;
+}
+
+.container.collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* Make sure when collapsed the sidebar content is hidden but the toggle remains interactable */
+.container.collapsed .sidebar {
+  width: 0;
+  padding: 0;
+  overflow: visible;
+}
+.container.collapsed .sidebar > *:not(.sidebar-toggle) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Prevent horizontal overflow caused by long inputs or dropdowns */
+.sidebar input,
+.sidebar .form__field,
+.sidebar .dropdown-menu {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .container.collapsed .button,
@@ -47,14 +86,12 @@
 .container.collapsed .switch,
 .container.collapsed .form__field {
   transform: translateX(-130%);
-  transition: transform 0.3s ease;
 }
 
 .container:not(.collapsed) .button,
 .container:not(.collapsed) .switch-button-container,
 .container:not(.collapsed) .form__field {
   transform: translateX(0);
-  transition: transform 0.3s ease;
 }
 
 .main {

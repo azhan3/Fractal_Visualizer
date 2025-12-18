@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./Styles/toggle.scss";
 
-export let choice = 1;
+export let choice = 2;
 
 const ToggleSwitch = ({ onChoiceChange }) => {
   const [localChoice, setLocalChoice] = useState(choice);
 
   useEffect(() => {
     if (typeof onChoiceChange === "function") {
-      onChoiceChange(choice);
+      onChoiceChange(localChoice);
     }
   }, [localChoice, onChoiceChange]);
 

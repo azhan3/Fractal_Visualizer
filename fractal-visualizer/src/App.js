@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import ToggleSwitch, { choice } from "./ToggleSwitch";
+import ToggleSwitch from "./ToggleSwitch";
 import WebGLViewport from "./WebGLViewport";
 import "./Styles/input.scss";
 import "./Styles/button.css";
@@ -10,7 +10,7 @@ import "./Styles/border.css";
 import "./Styles/checkbox.css";
 import "./Styles/color-chooser.css";
 import "./Styles/toggle-small.scss";
-import Draggable from "react-draggable";
+// removed react-draggable: prime races moved into sidebar
 
 const DEFAULT_PRECISION = 30;
 const DEFAULT_ZOOM = 1;
@@ -228,12 +228,12 @@ const App = () => {
   });
   const [renderPoints, setRenderPoints] = useState(new Float32Array());
   const [primeRaceRenderPoints, setPrimeRaceRenderPoints] = useState([]);
-  const [nValue, setNValue] = useState(1000);
-  const [pValue, setPValue] = useState(3);
+  const [nValue, setNValue] = useState(10000);
+  const [pValue, setPValue] = useState(5);
   const [lValue, setLValue] = useState(0.5);
   const [useRecommendedScaleFactor, setUseRecommendedScaleFactor] =
-    useState(false);
-  const floatingRef = useRef(null);
+    useState(true);
+  
   const [collapsed, setCollapsed] = useState(false);
 
   const [primes, setPrimes] = useState("3");
@@ -248,9 +248,7 @@ const App = () => {
   const [primeRaces, setPrimeRaces] = useState(true);
   const [dotSize, setDotSize] = useState(2);
   const [sizePlaceholder, setSizePlaceholder] = useState(2);
-  const [algorithm, setAlgorithm] = useState(choice);
-
-  
+  const [algorithm, setAlgorithm] = useState(2);
   const requestTimeoutRef = useRef(null);
   const wsRef = useRef(null);
   const precisionRef = useRef(viewState.precision);
@@ -555,7 +553,6 @@ const App = () => {
           pValue: parseInt(pValue, 10) || 0,
           lValue: parseFloat(lValue, 10) || 0,
           algorithm: parseInt(algorithm, 10),
-          precision: Math.round(viewState.precision),
           recommendL: useRecommendedScaleFactor,
         },
         view: {
@@ -596,7 +593,6 @@ const App = () => {
     viewState.zoom,
     viewState.panX,
     viewState.panY,
-    viewState.precision,
     algorithm,
     connectWebSocket,
   ]);
@@ -654,11 +650,6 @@ const App = () => {
     setPrimeRaces(event.target.checked);
   };
 
-  const [expanded, setExpanded] = useState(true);
-
-  const handleToggleExpand = () => {
-    setExpanded(!expanded);
-  };
   const handlePrimeRaceToggleChange = (index) => {
     setPrimeRacesToggles((prevState) =>
       prevState.map((value, currentIndex) =>
@@ -690,16 +681,7 @@ const App = () => {
     }));
   };
 
-  const handlePrecisionChange = (event) => {
-    const nextValue = Number(event.target.value);
-    if (!Number.isFinite(nextValue)) {
-      return;
-    }
-    setViewState((prev) => ({
-      ...prev,
-      precision: Math.round(nextValue),
-    }));
-  };
+  
 
   const colors = [
     "#FF4136",
@@ -712,69 +694,7 @@ const App = () => {
 
   return (
     <div className={`container ${collapsed ? "collapsed" : ""}`}>
-      <Draggable handle=".drag-handle" nodeRef={floatingRef}>
-        <div className="floating-area" ref={floatingRef}>
-          <div className="prime-races-header">
-            <div className="drag-handle">
-              Prime Races
-              <label className="checkbox-container">
-                <input
-                  type="checkbox"
-                  checked={expanded}
-                  onChange={handleToggleExpand}
-                />
-                <span className="checkmark"></span>
-              </label>
-            </div>
-          </div>
-          {expanded && (
-            <div className="prime-races-content">
-              {PrimeRacesToggles.map((enabled, index) => (
-                <div key={index} className="prime-race-item">
-                  <label className="switch">
-                    <input
-                      type="checkbox"
-                      checked={enabled}
-                      onChange={() => handlePrimeRaceToggleChange(index)}
-                    />
-                    <div>
-                      <span style={{ fontSize: "2em" }}>
-                        {primesArray[index]}x + {remaindersArray[index]}
-                      </span>
-                    </div>
-                  </label>
-                  <div className="color-choose">
-                    <div className={`dropdown dropdown-${index}`}>
-                      <div
-                        className="dropdown-toggle"
-                        onClick={() => handleToggleDropdown(index)}
-                      >
-                        <div
-                          className="selected-color"
-                          style={{ backgroundColor: selectedColor[index] }}
-                        ></div>
-                        <span className="dropdown-icon"></span>
-                      </div>
-                      {dropdownOpen === index && (
-                        <ul className="dropdown-menu">
-                          {colors.map((color) => (
-                            <li
-                              key={color}
-                              className="dropdown-item"
-                              style={{ backgroundColor: color }}
-                              onClick={() => handleColorSelection(index, color)}
-                            ></li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Draggable>
+      {/* Prime Races moved into sidebar - floating panel removed */}
 
       <div className="sidebar">
 
@@ -795,28 +715,26 @@ const App = () => {
                 ></g>
                 <g id="SVGRepo_iconCarrier">
                   <path
-                    d="M9 9L15 15"
+                    d="M6 12h8.5"
                     stroke="#B78C38"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   ></path>
                   <path
-                    d="M15 9L9 15"
+                    d="M10.5 8.5L14 12l-3.5 3.5"
                     stroke="#B78C38"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   ></path>
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
+                  <path
+                    d="M18 6v12"
                     stroke="#B78C38"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                  ></circle>
+                  ></path>
                 </g>
               </svg>
             </span>
@@ -884,20 +802,7 @@ const App = () => {
           </label>
         </div>
 
-        <div className="form__group field">
-          <input
-            type="number"
-            className="form__field"
-            placeholder="Precision"
-            value={viewState.precision}
-            onChange={handlePrecisionChange}
-            name="precision"
-            id="precision"
-          />
-          <label htmlFor="precision" className="form__label">
-            Precision
-          </label>
-        </div>
+        
         <br></br>
         <label className="switch">
           <input
@@ -969,27 +874,62 @@ const App = () => {
             Remainders
           </label>
         </div>
-        <span>Zoom Level: {viewState.zoom.toFixed(2)}</span>
+        <div className="prime-races-section">
+          <div className="prime-races-header">
+            <span style={{ fontWeight: 600 }}>Prime Races</span>
+          </div>
+          <div className="prime-races-content">
+            {PrimeRacesToggles.map((enabled, index) => (
+              <div key={index} className="prime-race-item">
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={() => handlePrimeRaceToggleChange(index)}
+                  />
+                  <div>
+                    <span style={{ fontSize: "1.1em" }}>
+                      {primesArray[index]}x + {remaindersArray[index]}
+                    </span>
+                  </div>
+                </label>
+                <div className="color-choose">
+                  <div className={`dropdown dropdown-${index}`}>
+                    <div
+                      className="dropdown-toggle"
+                      onClick={() => handleToggleDropdown(index)}
+                    >
+                      <div
+                        className="selected-color"
+                        style={{ backgroundColor: selectedColor[index] }}
+                      ></div>
+                      <span className="dropdown-icon"></span>
+                    </div>
+                    {dropdownOpen === index && (
+                      <ul className="dropdown-menu">
+                        {colors.map((color) => (
+                          <li
+                            key={color}
+                            className="dropdown-item"
+                            style={{ backgroundColor: color }}
+                            onClick={() => handleColorSelection(index, color)}
+                          ></li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            </div>
+        </div>
       </div>
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        <svg className="icon" viewBox="0 0 24 24" fill="#000000">
-          {collapsed ? (
-            <path
-              d="M4 6L20 12L4 18"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          ) : (
-            <path
-              d="M4 6L20 12L4 18"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
+
+      <button className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
         </svg>
-      </div>
+      </button>
 
       <div className="main">
         <div className="border">

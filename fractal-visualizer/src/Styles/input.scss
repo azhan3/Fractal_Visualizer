@@ -19,7 +19,6 @@ $gray: #9b9b9b;
   color: #253759;
   padding: 7px 0;
   background: transparent;
-  transition: border-color 0.2s;
 
   &::placeholder {
     color: transparent;
@@ -36,7 +35,6 @@ $gray: #9b9b9b;
   position: absolute;
   top: 0;
   display: block;
-  transition: 0.2s;
   font-size: 1rem;
   color: #466273;
 }
@@ -46,7 +44,6 @@ $gray: #9b9b9b;
     position: absolute;
     top: 0;
     display: block;
-    transition: 0.2s;
     font-size: 1rem;
     color: $primary;
     font-weight:700;

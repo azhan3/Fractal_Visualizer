@@ -63,3 +63,34 @@ box-sizing: border-box;
 .prime-race-label {
   font-size: 2em;
 }
+
+.prime-races-section {
+  margin-top: 16px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.prime-race-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.prime-race-item .switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selected-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.dropdown-toggle { display: inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.dropdown-menu { position: absolute; background: white; border:1px solid #ddd; padding:6px; display:flex; gap:6px; margin-top:6px; z-index:400; }
+.dropdown-item { width:18px; height:18px; border-radius:3px; cursor:pointer; }
